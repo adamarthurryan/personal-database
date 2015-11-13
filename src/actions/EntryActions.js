@@ -3,13 +3,14 @@ import alt from 'components/Dispatcher';
 import EntrySource  from '../sources/EntrySource'
 
 class EntryActions {
+  /*
   addEntry(path) {
     this.dispatch(path);
   }
-
+  */
   addResource(path, filename) {
     this.dispatch([path, filename]);
-  }
+  } 
 
   setIndex(path, index) {
     this.dispatch([path, index]);
@@ -23,18 +24,21 @@ class EntryActions {
     this.dispatch(entries);
   }
 
+  updateEntry(entry) {
+    this.dispatch(entry);
+  }
+
 
   fetchEntries() {
     // we dispatch an event here so we can have "loading" state.
     this.dispatch();
-    EntrySource.fetch()
-      .then((entries) => {
-        // we can access other actions within our action through `this.actions`
-        this.actions.updateEntries(entries);
-      })
-      .catch((errorMessage) => {
-        this.actions.fetchEntriesFailed(errorMessage);
-      });
+    EntrySource.fetch( (entry, err) => {
+      if (err)
+        this.actions.fetchEntriesFailed(err);
+
+      this.actions.updateEntry(entry);
+      console.log(entry);
+    });
   }
 
   fetchEntriesFailed(errorMessage) {

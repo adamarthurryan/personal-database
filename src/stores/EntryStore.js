@@ -8,12 +8,13 @@ class EntryStore {
     this.entries = {};
 
     this.bindListeners({
-      handleAddEntry: EntryActions.ADD_ENTRY,
+      /*handleAddEntry: EntryActions.ADD_ENTRY,*/
       handleAddResource: EntryActions.ADD_RESOURCE,
       handleSetIndex: EntryActions.SET_INDEX,
       handleSetBody: EntryActions.SET_BODY,
       handleFetchEntries: EntryActions.FETCH_ENTRIES,
       handleUpdateEntries: EntryActions.UPDATE_ENTRIES,
+      handleUpdateEntry: EntryActions.UPDATE_ENTRY,
       handleFetchEntriesFailed: EntryActions.FETCH_ENTRIES_FAILED
     });
   }
@@ -30,6 +31,11 @@ class EntryStore {
     this.entries = entries;
   }
 
+  /* Replace the existing entry with the given entry. */
+  handleUpdateEntry(entry) {
+    this.entries[entry.path] = entry;
+  }
+
   handleFetchEntriesFailed(message) {
     this.error = true;
     this.errorMessage = message;
@@ -37,9 +43,11 @@ class EntryStore {
 
   /* Adds the given entry to the store.
      Existing records at the path will be replaced with a new empty instance.*/
+  /*
   handleAddEntry(path) {
     this.entries[path] = new Entry(path);
   }
+  */
 
   /* Adds the given resource to the store.
      It is assumed that:
@@ -71,20 +79,28 @@ class EntryStore {
   }
 }
 
-export class Resource {
+class Resource {
   constructor(path, filename) {
     this.path=path;
     this.filename=filename;
   }
 }
 
-export class Entry {
+
+
+
+
+
+
+class Entry {
   constructor(path) {
     this.path = path;
     this.resources = [];
     this.index = null;
     this.body = null;
   }
+
+  
 
   addResource(resource) {
     this.resources.append(resource);

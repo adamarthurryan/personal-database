@@ -20,6 +20,14 @@ module.exports = {
     publicPath: publicPath,
     noInfo: false
   },
+  devMiddleware: {   
+    noInfo: false,
+    quiet: false,
+    publicPath: publicPath,
+    stats: {
+        color: true
+    }
+  },
   resolve: {
     extensions: ['', '.js', '.jsx'],
     alias: {

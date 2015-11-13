@@ -1,28 +1,8 @@
-var mockData = {
-  'entry/1': {
-    'path': 'entry/1',
-    'resources' : ['image1.jpg', 'image2.jpg', 'image3.jpg']
-  },
-
-  'entry/1/hello': {
-    'path': 'entry/1/hello',
-    'resources' : ['document.pdf']
-  },
-
-  'entry-2': {
-    'path': 'entry-2',
-    'resources' : ['imageA.jpg', 'imageB.jpg', 'imageC.jpg']
-  }
-  
-}
-
+import superagent from 'superagent';
 
 export var EntrySource = {
-  fetch: function() {
-    return new Promise(function(resolve, reject) {
-      setTimeout( () => resolve(mockData), 250);
-
-    });
+  fetch: function(callback) {
+    load('.','', callback);
   },
   remoteAction: {
     remote(state) {},
@@ -39,3 +19,24 @@ export var EntrySource = {
 };
 
 export default EntrySource;
+
+function load (parent, path, callback) {
+  console.log("load("+(path?parent+"/"+path:parent)+")");
+
+  superagent
+      .get("/static/"+(path?parent+"/"+path:parent))
+      .set('Accept', 'application/json')
+      .end( (err, res)  => {
+        if (err) 
+          callback(null, err);
+
+        var dirs = res.body.filter(item => item.stat.isDirectory);
+        dirs.forEach(dir => load((path?parent+"/"+path:parent), dir.name, callback));
+
+        var files =  res.body.filter(item => item.stat.isFile);
+        var filenames = files.map(file => file.name);
+        
+        var entry = {path: (path?parent+"/"+path:parentpath?parent+"/"+path:parent), resources: filenames};
+        callback(entry);
+  });
+}

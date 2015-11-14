@@ -1,5 +1,5 @@
 require('normalize.css');
-require('styles/App.css');
+require('styles/Main.css');
 
 import EntryStore from '../stores/EntryStore';
 import React from 'react';
@@ -12,13 +12,12 @@ let yeomanImage = require('../images/yeoman.png');
 
 
 
-var EntriesContainer = <AltContainer store={EntryStore}>
-    <Entries />
+var RootEntryContainer = <AltContainer store={EntryStore}>
+    <Entry path="" />
   </AltContainer> 
 
 class EntryContainer extends React.Component {
   render() {
-    console.log("Entry Container props:",this.props);
     return <AltContainer store={EntryStore}>
       <Entry path={this.props._[0]}/>
     </AltContainer> 
@@ -35,13 +34,14 @@ class AppComponent extends React.Component {
 
     return (
       <div className="index">
-        <img src={yeomanImage} alt="Yeoman Generator" />
+        
 
-        <Locations >
-          <Location path="/" handler={EntriesContainer} />
-          <Location path="/*" handler={EntryContainer}/>
-        </Locations>
-            
+        <div className="content">
+          <Locations >
+            <Location path="/" handler={RootEntryContainer} />
+            <Location path="/*" handler={EntryContainer}/>
+          </Locations>
+        </div>  
       </div>
     );
   }

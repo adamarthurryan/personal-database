@@ -11,11 +11,31 @@ body {
   display: block;
 }
 
-.index .notice {
+.index .content {
   margin: 20px auto;
-  padding: 15px 0;
-  text-align: center;
+  padding: 15px 40px;
+  width: 800px;
   border: 1px solid #000;
   border-width: 1px 0;
   background: #eee;
+}
+
+.entry {
+  clear:both;
+}
+
+.resource-thumb-thumb {
+  float:left;
+}
+
+.resource-thumb-name {
+
+}
+
+.resource-list-thumb {
+  float:left;
+}
+
+.resource-list-name {
+
 }

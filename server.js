@@ -23,11 +23,20 @@ new WebpackDevServer(webpack(config), config.devServer)
 */
 
 
+
+var databasePath = '../../../local/2015\ school\ embed\ data'
+
 var app = express();
 
+//express-thumbnail allows serving on-demand thumbnails 
+var expressThumbnail = require('express-thumbnail');
+app.use('/static', expressThumbnail.register(__dirname + "../" + databasePath));
+
 //serve the static files and the json index
-app.use('/static', express.static('static'));
-app.use('/static', serveIndex('static', {'jsonStats':true}));
+//app.use('/static', express.static(databasePath));
+app.use( '/static', serveIndex(databasePath, {'jsonStats':true}));
+
+
 
 //this middleware doesn't seem to work:
 //var webpackDevMiddleware = require("webpack-dev-middleware");

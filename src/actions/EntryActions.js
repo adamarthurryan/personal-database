@@ -3,11 +3,12 @@ import alt from 'components/Dispatcher';
 import EntrySource  from '../sources/EntrySource'
 
 class EntryActions {
-  /*
+
+/*  
   addEntry(path) {
     this.dispatch(path);
   }
-  */
+  
   addResource(path, filename) {
     this.dispatch([path, filename]);
   } 
@@ -19,11 +20,8 @@ class EntryActions {
   setBody(path, body) {
     this.dispatch([path, body]);
   }
-
-  updateEntries(entries) {
-    this.dispatch(entries);
-  }
-
+*/
+ 
   updateEntry(entry) {
     this.dispatch(entry);
   }
@@ -37,12 +35,17 @@ class EntryActions {
         this.actions.fetchEntriesFailed(err);
 
       this.actions.updateEntry(entry);
-      console.log(entry);
-    });
+
+    }, () => this.actions.fetchEntriesDone());
   }
 
   fetchEntriesFailed(errorMessage) {
     this.dispatch(errorMessage);
+  }
+
+  //called when all the entries have been fetched (regardless of error state)
+  fetchEntriesDone() {
+    this.dispatch();
   }
 
 }

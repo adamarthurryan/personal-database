@@ -1,8 +1,9 @@
-require('normalize.css');
-require('styles/App.css');
 
 import React from 'react';
 import Entries  from './Entries';
+import EntriesContainer  from '../stores/Entries';
+import {Link} from 'react-router-component';
+import ResourceThumb from './ResourceThumb';
 
 
 export default class Entry extends React.Component { 
@@ -13,35 +14,28 @@ export default class Entry extends React.Component {
 
   render () {
     var entries = this.props.entries;
-    var entryPaths = Object.keys(entries);
-
+    
     var path = this.props.path;
 
-    //this regex should return the immediate children of the entry
-    var reChildren = new RegExp(path+"/([^/]*)$")
 
-    var childPaths = entryPaths.filter(entryPath => {
-      return entryPath.match(reChildren);
-    });
+    var entry = entries.get(path);
 
-    console.log(childPaths);
+    var parent = entries.getParent(path)
+    var children = entries.getChildren(path);
+    var childEntries = new EntriesContainer(children.map(entry => [entry.path, entry]));
 
-    var children = {};
-
-    childPaths.forEach(childPath => children[childPath] = entries[childPath]);
-
-
-
-    if (!entries[path])
+    if (!entry)
       return <div>Loading...</div>
 
+
     return (
-      <div>
+      <div className="entry">
+        {(parent? <i><Link href={"/"+parent.path}>up</Link></i>: null)}
         <h1>{path}</h1>
-        {entries[path].resources.map( resource => {
-          return <p>{resource}</p>
+        {entry.resources.map( resource => {
+          return <ResourceThumb entry={entry} resource={resource}/>
         })}
-        <Entries entries={children}/>
+        {(children? <Entries entries={childEntries}/> : null)}
       </div> 
     );
   }

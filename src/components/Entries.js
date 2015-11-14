@@ -1,11 +1,9 @@
-require('normalize.css');
-require('styles/App.css');
-
 import React from 'react';
 import {Link} from 'react-router-component';
+import ResourceList from './ResourceList';
 
 
-export default class Entry extends React.Component { 
+export default class Entries extends React.Component { 
 
   constructor() {
     super();
@@ -14,16 +12,16 @@ export default class Entry extends React.Component {
   render () {
     var entries = this.props.entries;
 
-    var entryComps = Object.keys(entries).map(path => {
-      return <div>
-        <h1><Link href={"/"+path}>{path}</Link></h1>
-        {entries[path].resources.map( resource => {
-          return <p>{resource}</p>
+    var entryComps = Array.from(entries.keys()).map(path => {
+      return <div className="entry">
+        <h4><Link href={"/"+path}>{path}</Link></h4>
+        {entries.get(path).resources.map( resource => {
+          return <ResourceList entry={entries.get(path)} resource={resource}/>
         })}
       </div> 
     });
 
-    return <div>
+    return <div className = "entries">
       {entryComps}
     </div>
   }

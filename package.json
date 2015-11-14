@@ -60,6 +60,7 @@
     "alt": "^0.17.8",
     "alt-container": "^1.0.0",
     "express": "^4.13.3",
+    "express-thumbnail": "^0.2.1",
     "lodash": "^3.10.1",
     "normalize.css": "^3.0.3",
     "react": "^0.14.0",

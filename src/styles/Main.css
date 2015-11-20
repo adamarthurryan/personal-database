@@ -24,16 +24,13 @@ body {
   clear:both;
 }
 
-.resource-thumb-thumb {
+.resource-thumb {
   float:left;
 }
 
-.resource-thumb-name {
 
-}
-
-.resource-list-thumb {
-  float:left;
+.resource-link {
+  clear:both;
 }
 
 .resource-list-name {

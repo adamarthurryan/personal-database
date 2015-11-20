@@ -30,13 +30,7 @@ class EntryActions {
   fetchEntries() {
     // we dispatch an event here so we can have "loading" state.
     this.dispatch();
-    EntrySource.fetch( (entry, err) => {
-      if (err)
-        this.actions.fetchEntriesFailed(err);
-
-      this.actions.updateEntry(entry);
-
-    }, () => this.actions.fetchEntriesDone());
+    EntrySource.fetch(this.actions);
   }
 
   fetchEntriesFailed(errorMessage) {

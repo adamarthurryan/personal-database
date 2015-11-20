@@ -4,7 +4,7 @@ var config = require('./webpack.config');
 var open = require('open');
 var express = require('express');
 var serveIndex = require('serve-index');
-
+var path = require('path');
 
 //allows recursive watching of a folder
 //var watch = require('node-watch');
@@ -24,13 +24,14 @@ new WebpackDevServer(webpack(config), config.devServer)
 
 
 
-var databasePath = '../../../local/2015\ school\ embed\ data'
+var databasePath = './static'
 
 var app = express();
 
 //express-thumbnail allows serving on-demand thumbnails 
 var expressThumbnail = require('express-thumbnail');
-app.use('/static', expressThumbnail.register(__dirname + "../" + databasePath));
+console.log(__dirname);
+app.use('/static', expressThumbnail.register(__dirname +path.sep+ databasePath));
 
 //serve the static files and the json index
 //app.use('/static', express.static(databasePath));
@@ -61,5 +62,7 @@ app.listen(8080);
 
 //here is the webpackServer
 var webpackDevServer = require('webpack-dev-server');
+console.log("config.webtool: ",config.devtool);
+
 new webpackDevServer(webpack(config), config.devServer)
-.listen(config.port);
+ .listen(config.port);

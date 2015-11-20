@@ -1,7 +1,16 @@
 import Entry from "./Entry"
+import * as PathTools from './PathTools'
 
 
 /* V8 doesn't support extending builtins (like Map) so we have to implement this as a wrapper.*/
+
+/*!!! Map is not the correct datastructure for this collection.
+Instead, we should have something with easy querying by prefix string or path. A doubly-linked tree?*/ 
+
+/*!!! the get functions should all return instances of Entries, which should be iterable */
+
+
+
 export default class Entries  {
 
   constructor(entries) {
@@ -18,40 +27,31 @@ export default class Entries  {
   }
 
   getDescendants(parentPath) {
-    var parentPath = Entry.normalizePath(parentPath);
+    var parentPath = PathTools.normalize(parentPath);
 
     return Array.from(this.map.values())
-      .filter(entry => entry.path.match("^"+parentPath+"(^|/).*$"));
+      .filter(entry => PathTools.isDescendantOf(entry.path, parentPath));
   }
 
   getChildren(parentPath) {
-    var parentPath = Entry.normalizePath(parentPath);
+    var parentPath = PathTools.normalize(parentPath);
 
-//    console.log("getChildren", parentPath);
-    return Array.from(this.map.values()).filter(entry => {
-//      console.log(" > ", entry.path, entry.path.match(parentPath+"(^|/)[^/]*$"))
-      return (
-        entry.path.match("^"+parentPath+"(^|/)[^/]*$") 
-        && (parentPath.length < entry.path.length)
-      );
-    });
+    return Array.from(this.map.values())
+      .filter(entry => PathTools.isChildOf(entry.path, parentPath));
   }
 
   getParent(childPath) {
-    var childPath = Entry.normalizePath(childPath);
+    var childPath = PathTools.normalize(childPath);
 
-    return Array.from(this.map.values()).find(entry =>
-      ( childPath.match("^"+entry.path+"(^|/)[^/]*$")
-        && childPath.length > entry.path.length)
-    );
+    return Array.from(this.map.values())
+      .find(entry => PathTools.isChildOf(childPath, entry.path));
   }
 
   getAncestors(childPath) {
-    var childPath = Entry.normalizePath(childPath);
+    var childPath = PathTools.normalize(childPath);
 
-    return Array.from(this.map.values()).filter(entry =>
-      childPath.match("^"+entry.path+"(^|/).*$")   
-    );
+    return Array.from(this.map.values())
+      .filter(entry => PathTools.isDescendantOf(childPath, entry.path));
   }
 }
 

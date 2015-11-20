@@ -4,7 +4,11 @@ import Entries  from './Entries';
 import EntriesContainer  from '../stores/Entries';
 import {Link} from 'react-router-component';
 import ResourceThumb from './ResourceThumb';
-
+import ResourceLink from './ResourceLink';
+import Breadcrumbs from './Breadcrumbs';
+import ResourceDataStore from 'stores/ResourceDataStore'
+import IndexResource from './IndexResource';
+import AltContainer from 'alt-container';
 
 export default class Entry extends React.Component { 
 
@@ -20,20 +24,41 @@ export default class Entry extends React.Component {
 
     var entry = entries.get(path);
 
-    var parent = entries.getParent(path)
-    var children = entries.getChildren(path);
-    var childEntries = new EntriesContainer(children.map(entry => [entry.path, entry]));
 
     if (!entry)
       return <div>Loading...</div>
 
+    var children = entries.getChildren(path);
+    var childEntries = new EntriesContainer(children.map(entry => [entry.path, entry]));
+
+    var thumbResources = entry.resources.filter(res => res.canThumbnail);
+    var nonThumbResources = entry.resources.filter(res => ! res.canThumbnail);
+
+
+
+    var indexResource = entry.indexResource;
+    if (indexResource) {
+      ResourceDataStore.fetchResource(indexResource);
+    }
+
 
     return (
       <div className="entry">
-        {(parent? <i><Link href={"/"+parent.path}>up</Link></i>: null)}
-        <h1>{path}</h1>
-        {entry.resources.map( resource => {
-          return <ResourceThumb entry={entry} resource={resource}/>
+        <Breadcrumbs entry={entry}/>
+        <h1>{entry.title}</h1>
+        <h6><i>{entry.indexPath}</i></h6>
+        {indexResource ? 
+          <AltContainer store={ResourceDataStore}>
+            <IndexResource path={indexResource.path}/>
+          </AltContainer>
+          : null
+        }
+        
+        {nonThumbResources.map( resource => {
+          return <ResourceLink resource={resource}/>
+        })}
+        {thumbResources.map( resource => {
+          return <ResourceThumb resource={resource} size="400x400"/>
         })}
         {(children? <Entries entries={childEntries}/> : null)}
       </div> 

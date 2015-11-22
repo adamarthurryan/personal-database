@@ -24,7 +24,6 @@ export default class Entry extends React.Component {
 
     var entry = entries.get(path);
 
-
     if (!entry)
       return <div>Loading...</div>
 
@@ -34,10 +33,10 @@ export default class Entry extends React.Component {
     var thumbResources = entry.resources.filter(res => res.canThumbnail);
     var nonThumbResources = entry.resources.filter(res => ! res.canThumbnail);
 
-
-
+    
     var indexResource = entry.indexResource;
     if (indexResource) {
+      //!!! this should happen in didReceiveProps or something? 
       ResourceDataStore.fetchResource(indexResource);
     }
 
@@ -49,7 +48,7 @@ export default class Entry extends React.Component {
         <h6><i>{entry.indexPath}</i></h6>
         {indexResource ? 
           <AltContainer store={ResourceDataStore}>
-            <IndexResource path={indexResource.path}/>
+            <IndexResource resource={indexResource}/>
           </AltContainer>
           : null
         }

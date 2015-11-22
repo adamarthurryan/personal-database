@@ -11,7 +11,7 @@ function renderMarkdown(markdown) {
 export default class IndexResource extends React.Component { 
   render() {
 
-    var resourceData = this.props.resources.get(this.props.path);
+    var resourceData = this.props.resources.get(this.props.resource.path);
 
     if (! resourceData)
       //should have a better loading display

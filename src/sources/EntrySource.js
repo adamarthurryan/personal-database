@@ -56,6 +56,7 @@ function load (counter, path, actions) {
         var resourceObjs = resources.map(file => new Resource(path+'/'+file.name));
         entry.resources = resourceObjs;
 
+
         //find index files, if they exist, and add them to the entry
         var indexFile = res.body.find(item => item.stat.isFile && item.name.toLowerCase() == 'index.md');
         if (indexFile)
@@ -90,3 +91,4 @@ function load (counter, path, actions) {
 
   });
 }
+

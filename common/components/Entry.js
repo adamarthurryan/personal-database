@@ -1,7 +1,7 @@
 
 import React from 'react';
 import Entries  from './Entries';
-import EntriesContainer  from '../stores/Entries';
+import EntriesContainer  from 'stores/Entries';
 import {Link} from 'react-router-component';
 import ResourceThumb from './ResourceThumb';
 import ResourceLink from './ResourceLink';

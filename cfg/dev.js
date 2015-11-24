@@ -11,7 +11,7 @@ var config = _.merge({
   entry: [
     'webpack-dev-server/client?http://127.0.0.1:8000',
     'webpack/hot/only-dev-server',
-    './src/components/run'
+    './client/client.js'
   ],
   cache: true,
   //devtool: 'cheap-module-inline-source-map, cheap-eval-source-map, #@source-map',
@@ -25,11 +25,23 @@ var config = _.merge({
   ]
 }, baseConfig);
 
+
+var srcClientPath = path.join(__dirname, '/../client');
+var srcCommonPath = path.join(__dirname, '/../common');
+
+var babelQuery =  {
+    // https://github.com/babel/babel-loader#options
+    cacheDirectory: true,
+    presets: ['es2015', 'react', 'stage-2']
+}
+
 // Add needed loaders
 config.module.loaders.push({
   test: /\.(js|jsx)$/,
-  loader: 'react-hot!babel-loader',
-  include: path.join(__dirname, '/../src')
+  loader: 'react-hot!babel'+"?"+JSON.stringify(babelQuery),
+
+  include: [srcClientPath, srcCommonPath]
 });
+
 
 module.exports = config;

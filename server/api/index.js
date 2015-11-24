@@ -4,9 +4,7 @@
 import chokidar from 'chokidar';
 
 
-export serve;
-
-export Database = class Database {
+export class Database {
   constructor (databasePath) {
     this.databasePath = databasePath;
 
@@ -49,7 +47,7 @@ export Database = class Database {
   // request current database state
 }
 
-function serve(database) {
+export function serve(database) {
 
   //initialize the API
 

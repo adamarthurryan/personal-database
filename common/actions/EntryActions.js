@@ -1,6 +1,6 @@
 import alt from 'components/Dispatcher';
 
-import EntrySource  from '../sources/EntrySource'
+import EntrySource  from 'sources/EntrySource'
 
 class EntryActions {
 

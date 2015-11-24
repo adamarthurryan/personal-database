@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import EntryActions from '../actions/EntryActions';
-import Main  from './Main';
+import EntryActions from 'actions/EntryActions';
+import Main  from 'components/Main';
 
 
 

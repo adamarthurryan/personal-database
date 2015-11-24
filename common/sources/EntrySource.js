@@ -1,6 +1,6 @@
 import superagent from 'superagent';
-import Entry from '../stores/Entry';
-import Resource from '../stores/Resource';
+import Entry from 'stores/Entry';
+import Resource from 'stores/Resource';
 
 /* 
 !!! Refactor this to conform to the pattern defined at http://alt.js.org/docs/async/

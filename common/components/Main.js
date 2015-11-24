@@ -1,7 +1,7 @@
 require('normalize.css');
 require('styles/Main.css');
 
-import EntryStore from '../stores/EntryStore';
+import EntryStore from 'stores/EntryStore';
 import React from 'react';
 import Entries  from './Entries';
 import Entry  from './Entry';

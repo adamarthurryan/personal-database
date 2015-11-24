@@ -8,7 +8,7 @@ import express from 'express';
 import serveIndex from 'serve-index';
 import path from 'path';
 
-import  API from './api';
+import * as API from './api';
 
 //allows recursive watching of a folder
 //var watch = require('node-watch');

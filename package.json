@@ -14,8 +14,8 @@
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
     "serve": "node server.js --env=dev",
-    "serve:dist": "node server.js --env=dist",
-    "start": "node server.js --env=dev",
+    "serve:dist": "node server.js --env=dist ",
+    "start": "npm run serve",
     "test": "karma start",
     "test:watch": "karma start --autoWatch=true --singleRun=false"
   },
@@ -60,6 +60,7 @@
   "dependencies": {
     "alt": "^0.17.8",
     "alt-container": "^1.0.0",
+    "chokidar": "^1.3.0",
     "express": "^4.13.3",
     "express-thumbnail": "^0.2.1",
     "lodash": "^3.10.1",

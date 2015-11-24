@@ -1,10 +1,14 @@
+"use strict";
 /*eslint no-console:0 */
+
 var webpack = require('webpack');
 var config = require('./webpack.config');
 var open = require('open');
 var express = require('express');
 var serveIndex = require('serve-index');
 var path = require('path');
+
+var API = require('./src/api');
 
 //allows recursive watching of a folder
 //var watch = require('node-watch');
@@ -38,12 +42,15 @@ app.use('/static', expressThumbnail.register(__dirname +path.sep+ databasePath))
 app.use( '/static', serveIndex(databasePath, {'jsonStats':true}));
 
 
+var database = new API.Database(__dirname +path.sep+ databasePath);
+
+app.use( '/api', API.serve(database));
 
 //this middleware doesn't seem to work:
 //var webpackDevMiddleware = require("webpack-dev-middleware");
 //app.use(webpackDevMiddleware(webpack(config), config.devMiddleware));
 
-//so we make a separate server for webpackDevMiddleware and proxy to it
+//so we make a separate server for webpackDevServer and proxy to it
 var httpProxy = require('http-proxy');
 var proxy = httpProxy.createProxyServer();
 app.all('/*', function (req, res) {

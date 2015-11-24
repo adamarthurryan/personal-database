@@ -1,12 +1,12 @@
 "use strict";
 
 // chokidar for file watching
-var chokidar = require('chokidar');
+import chokidar from 'chokidar';
 
 
-exports.serve = serve;
+export serve;
 
-exports.Database = class Database {
+export Database = class Database {
   constructor (databasePath) {
     this.databasePath = databasePath;
 

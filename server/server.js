@@ -1,14 +1,14 @@
 "use strict";
 /*eslint no-console:0 */
 
-var webpack = require('webpack');
-var config = require('./webpack.config');
-var open = require('open');
-var express = require('express');
-var serveIndex = require('serve-index');
-var path = require('path');
+import webpack from 'webpack';
+import config from '../webpack.config';
+import open  from 'open';
+import express from 'express';
+import serveIndex from 'serve-index';
+import path from 'path';
 
-var API = require('./src/api');
+import  API from './api';
 
 //allows recursive watching of a folder
 //var watch = require('node-watch');
@@ -28,7 +28,7 @@ new WebpackDevServer(webpack(config), config.devServer)
 
 
 
-var databasePath = './static'
+var databasePath = 'static'
 
 var app = express();
 

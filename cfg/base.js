@@ -1,7 +1,8 @@
 var path = require('path');
 
 var port = 8000;
-var srcPath = path.join(__dirname, '/../src');
+var srcClientPath = path.join(__dirname, '/../client');
+var srcCommonPath = path.join(__dirname, '/../common');
 var publicPath = '/assets/';
 
 module.exports = {
@@ -13,13 +14,15 @@ module.exports = {
     publicPath: publicPath
   },
   devServer: {
-    contentBase: './src/',
+    contentBase: './client/',
     historyApiFallback: true,
     hot: true,
     port: port,
     publicPath: publicPath,
     noInfo: false
-  },
+  }, 
+  //because webpack-dev-middleware doesn't have a contentBase parameter
+  //we'll have to arrange for static assets to be served separately
   devMiddleware: {   
     noInfo: false,
     quiet: false,
@@ -31,21 +34,27 @@ module.exports = {
   resolve: {
     extensions: ['', '.js', '.jsx'],
     alias: {
-      actions: srcPath + '/actions/',
-      components: srcPath + '/components/',
-      sources: srcPath + '/sources/',
-      stores: srcPath + '/stores/',
-      styles: srcPath + '/styles/',
-      config: srcPath + '/config/' + process.env.REACT_WEBPACK_ENV
+      actions: srcCommonPath + '/actions/',
+      components: srcCommonPath + '/components/',
+      sources: srcCommonPath + '/sources/',
+      stores: srcCommonPath + '/stores/',
+      styles: srcClientPath + '/styles/',
+      config: srcClientPath + '/config/' + process.env.REACT_WEBPACK_ENV
     }
   },
   module: {
     preLoaders: [
       {
         test: /\.(js|jsx)$/,
-        include: path.join(__dirname, 'src'),
+        include: srcClientPath,
+        loader: 'eslint-loader'
+      },
+      {
+        test: /\.(js|jsx)$/,
+        include: srcCommonPath,
         loader: 'eslint-loader'
       }
+
     ],
     loaders: [
       {

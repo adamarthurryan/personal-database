@@ -1,11 +1,21 @@
 var path = require('path');
-var srcPath = path.join(__dirname, '/../src/');
+var srcClientPath = path.join(__dirname, '/../client');
+var srcCommonPath = path.join(__dirname, '/../common');
+var srcTestPath = path.join(__dirname, '/../test');
+
 
 // Add needed plugins here
 var BowerWebpackPlugin = require('bower-webpack-plugin');
 
+
+var babelQuery =  {
+    // https://github.com/babel/babel-loader#options
+    cacheDirectory: true,
+    presets: ['es2015', 'react', 'stage-2']
+}
+
 module.exports = {
-  devtool: 'eval',
+  devtool: 'eval-source-map',
   module: {
     loaders: [
       {
@@ -14,18 +24,19 @@ module.exports = {
       },
       {
         test: /\.(js|jsx)$/,
-        loader: 'babel-loader',
+        loader: 'babel'+"?"+JSON.stringify(babelQuery),
         include: [
-          path.join(__dirname, '/../common'),
-          path.join(__dirname, '/../client'),
-          path.join(__dirname, '/../test')
+          srcClientPath,
+          srcCommonPath,
+          srcTestPath
         ]
       },
       {
         test: /\.(js|jsx)$/,
-        loader: 'babel-loader',
+        loader: 'babel'+"?"+JSON.stringify(babelQuery),
         include: [
-          path.join(__dirname, '/../src')
+          srcClientPath,
+          srcCommonPath
         ],
         loader: 'isparta'
       }
@@ -34,13 +45,13 @@ module.exports = {
   resolve: {
     extensions: [ '', '.js', '.jsx' ],
     alias: {
-      actions: srcPath + 'actions/',
+      actions: path.join(srcCommonPath, 'actions/'),
       helpers: path.join(__dirname, '/../test/helpers'),
-      components: srcPath + 'components/',
-      sources: srcPath + 'sources/',
-      stores: srcPath + 'stores/',
-      styles: srcPath + 'styles/',
-      config: srcPath + 'config/' + process.env.REACT_WEBPACK_ENV
+      components: path.join(srcCommonPath, 'components/'),
+      sources: path.join(srcCommonPath, 'sources/'),
+      stores: path.join(srcCommonPath, 'stores/'),
+      styles: path.join(srcClientPath, 'styles/'),
+      config: path.join(srcClientPath, 'config', process.env.REACT_WEBPACK_ENV)
     }
   },
   plugins: [

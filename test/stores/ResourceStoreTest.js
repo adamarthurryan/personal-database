@@ -1,5 +1,6 @@
 'use strict';
 
+/*
 import alt from 'components/Dispatcher';
 import { ResourceStore } from 'stores//ResourceStore';
 import AltTestingUtils from 'alt/utils/AltTestingUtils';
@@ -13,3 +14,4 @@ describe('ResourceStore', () => {
     storeClass = AltTestingUtils.makeStoreTestable(alt, ResourceStore);
   });
 });
+*/

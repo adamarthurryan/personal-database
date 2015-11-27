@@ -1,9 +1,25 @@
 export function normalize(path) {
-  return path.replace(/\/$/, "").replace(/^\//, "").replace(/(\/)+/g, "/");
+  return path.replace(/\\/g, "/").replace(/(\/)+/g, "/").replace(/\/$/, "").replace(/^\//, "");
 }
 
 export function  getName(path) {
   return path.match(/[^\/]*$/)[0];
+}
+
+//returns the extension as eg. '.js'
+//paths with no extension or names that begin with . (eg. '.bashrc') will return null
+export function  getExtension(path) {
+  let match = path.match(/[^\/]+(\.[^\.\/]+)$/);
+
+  if (match==null)
+    return match;
+
+  return match[1];
+}
+
+//strips the extension if the path has one
+export function stripExtension(path) {
+  return path.replace(/([^\/]+)\.[^\.\/]+$/, "$1");
 }
 
 export function  isDescendantOf(path, parentPath) {

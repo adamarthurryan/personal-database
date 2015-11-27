@@ -22,6 +22,7 @@ describe('PathTools', () => {
     expect(f("/a/")).to.eql("a");
     expect(f("a//b//c")).to.eql("a/b/c")
     expect(f("a///////b//c")).to.eql("a/b/c")
+    expect(f("\\a\\b\\c\\\\d\\")).to.eql('a/b/c/d')
   });
 
   it ('should identify root paths', () => {
@@ -52,6 +53,31 @@ describe('PathTools', () => {
     expect(f('aa')).to.eql('aa');
     expect(f('aa/bb')).to.eql('bb');
     expect(f('aa/bb/cc')).to.eql('cc')
+  });
+
+  it ('should get extension parts' , () => {
+    let f = PathTools.getExtension;
+    expect(f('a.md')).to.eql('.md');
+    expect(f('a')).to.be.null;
+    expect(f('.bashrc')).to.be.null;
+    expect(f('a/a.md')).to.eql('.md');
+    expect(f('a/a')).to.be.null;
+    expect(f('a/.bashrc')).to.be.null;
+    expect(f('a/b.b/a.md')).to.eql('.md');
+    expect(f('a/b.b/a')).to.be.null;
+    expect(f('a/b.b/.bashrc')).to.be.null;
+  });
+  it ('should strip extension parts' , () => {
+    let f = PathTools.stripExtension;
+    expect(f('a.md')).to.eql('a');
+    expect(f('a')).to.eql('a');
+    expect(f('.bashrc')).to.eql('.bashrc');
+    expect(f('a/a.md')).to.eql('a/a');
+    expect(f('a/a')).to.eql('a/a');
+    expect(f('a/.bashrc')).to.eql('a/.bashrc');
+    expect(f('a/b.b/a.md')).to.eql('a/b.b/a');
+    expect(f('a/b.b/a')).to.eql('a/b.b/a');
+    expect(f('a/b.b/.bashrc')).to.eql('a/b.b/.bashrc');
   });
 
   it ('should identify children', () => {

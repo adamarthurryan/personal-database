@@ -6,7 +6,7 @@ import ReactDOM from 'react-dom';
 
 
 
-EntryActions.fetchEntries();
+//EntryActions.fetchEntries();
 
 // Render the main component into the dom
 ReactDOM.render(

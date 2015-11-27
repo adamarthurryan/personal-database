@@ -1,5 +1,5 @@
-"use strict";
 /*eslint no-console:0 */
+"use strict";
 
 import webpack from 'webpack';
 import config from '../webpack.config';
@@ -8,7 +8,7 @@ import express from 'express';
 import serveIndex from 'serve-index';
 import path from 'path';
 
-import * as API from './api';
+import FileWatcher from './api/FileWatcher';
 
 //allows recursive watching of a folder
 //var watch = require('node-watch');
@@ -28,23 +28,44 @@ new WebpackDevServer(webpack(config), config.devServer)
 
 
 
-var databasePath = 'static'
+var databaseFolder = 'static/actual'
+var databasePath = path.resolve(__dirname, '..', databaseFolder);
+
 
 var app = express();
 
 //express-thumbnail allows serving on-demand thumbnails 
 var expressThumbnail = require('express-thumbnail');
 console.log(__dirname);
-app.use('/static', expressThumbnail.register(__dirname +path.sep+ databasePath));
+app.use('/static', expressThumbnail.register(databasePath));
 
 //serve the static files and the json index
 //app.use('/static', express.static(databasePath));
 app.use( '/static', serveIndex(databasePath, {'jsonStats':true}));
 
 
-var database = new API.Database(__dirname +path.sep+ databasePath);
+//var database = new API.Database(__dirname +path.sep+ databasePath);
 
-app.use( '/api', API.serve(database));
+//app.use( '/api', API.serve(database));
+
+
+var watcher = new FileWatcher(databasePath);
+
+//for any watcher events, we should 
+  // 1) dispatch the appropriate actions
+  // 2) dispatch an WebSockets event
+watcher.on('addEntry', path=>
+  console.log('addEntry:', path));
+watcher.on('addResource', (path, resourceFile)=>
+  console.log('addResource:', path, resourceFile));
+watcher.on('removeEntry', path=>
+  console.log('removeEntry:', path));
+watcher.on('removeResource', (path, resourceFile)=>
+  console.log('removeResource:', path, resourceFile));
+watcher.on('updateIndex', (path, indexFile)=>
+  console.log('updateIndex:', path, indexFile));
+watcher.on('removeIndex', path=>
+  console.log('removeIndex:', path));
 
 //this middleware doesn't seem to work:
 //var webpackDevMiddleware = require("webpack-dev-middleware");

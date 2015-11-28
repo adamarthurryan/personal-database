@@ -3,7 +3,7 @@
 /*eslint no-console: 0*/
 'use strict';
 
-import config from 'config';
+import config from 'client/config';
 
 describe('appEnvConfigTests', () => {
   it('should load app config file depending on current --env', () => {

@@ -7,11 +7,14 @@ var baseConfig = require('./base');
 // Add needed plugins here
 var BowerWebpackPlugin = require('bower-webpack-plugin');
 
+var srcPath = path.join(__dirname, '..');
+
 var config = _.merge({
   entry: [
     'webpack-dev-server/client?http://127.0.0.1:8000',
     'webpack/hot/only-dev-server',
-    './client/client.js'
+    path.join(srcPath, 'client/client.js'),
+
   ],
   cache: true,
   //devtool: 'cheap-module-inline-source-map, cheap-eval-source-map, #@source-map',
@@ -26,9 +29,6 @@ var config = _.merge({
 }, baseConfig);
 
 
-var srcClientPath = path.join(__dirname, '/../client');
-var srcCommonPath = path.join(__dirname, '/../common');
-
 var babelQuery =  {
     // https://github.com/babel/babel-loader#options
     cacheDirectory: true,
@@ -40,7 +40,9 @@ config.module.loaders.push({
   test: /\.(js|jsx)$/,
   loader: 'react-hot!babel'+"?"+JSON.stringify(babelQuery),
 
-  include: [srcClientPath, srcCommonPath]
+  include: [
+    path.join(srcPath,'client'), path.join(srcPath,'common'), path.join(srcPath,'cfg')
+  ]
 });
 
 

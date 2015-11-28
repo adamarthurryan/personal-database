@@ -2,13 +2,13 @@
 "use strict";
 
 import webpack from 'webpack';
-import config from '../webpack.config';
+import config from '../../webpack.config';
 import open  from 'open';
 import express from 'express';
 import serveIndex from 'serve-index';
 import path from 'path';
 
-import FileWatcher from './api/FileWatcher';
+import FileWatcher from './io/FileWatcher';
 
 //allows recursive watching of a folder
 //var watch = require('node-watch');

@@ -3,8 +3,11 @@
 /*eslint no-console: 0*/
 'use strict';
 
-import Database from 'stores/Database';
+
+import Database from 'common/database/Database';
 import Immutable from 'immutable';
+
+//!!! This could be written more cleanly with chai-immutable
 
 describe('Database', () => {
 
@@ -195,6 +198,18 @@ describe('Database', () => {
 
   })
 
-  //get all children for an entry
+  it('should get all children for an entry', () => {
+    db = db.addEntry('a/b/c').addEntry('a/b/d').addEntry('a/b/e');
 
+    expect(db.getChildren('a/b').equals(Immutable.Set(['a/b/c', 'a/b/d', 'a/b/e']))).to.be.true;
+  });
+
+  it('should get attribute keys for an entry', () => {
+    db = db
+      .addEntry('a/b')
+      .setAttribute('a/b','thekey',[1])
+      .setAttribute('a/b','anotherkey', [2])
+
+    expect(db.getAttributeKeys('a/b').equals(Immutable.Set(['thekey', 'anotherkey']))).to.be.true
+  });
 });

@@ -1,4 +1,4 @@
-import * as PathTools from 'stores/PathTools'
+import * as PathTools from 'common/database/PathTools'
 
 export function titleize(path) {
   let name = PathTools.getName(path);

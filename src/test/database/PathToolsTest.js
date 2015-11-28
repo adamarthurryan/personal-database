@@ -3,7 +3,7 @@
 /*eslint no-console: 0*/
 'use strict';
 
-import * as PathTools from 'stores/PathTools';
+import * as PathTools from 'common/database/PathTools';
 
 describe('PathTools', () => {
 

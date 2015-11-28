@@ -1,7 +1,7 @@
 import Immutable from 'immutable'
 
-import * as PathTools from 'stores/PathTools'
-import * as TitleTools from 'stores/TitleTools'
+import * as PathTools from 'common/database/PathTools'
+import * as TitleTools from 'common/database/TitleTools'
 
 //wu.js
 //immutable.js ?
@@ -210,6 +210,11 @@ Database.prototype.getAttribute = function getAttribute(entryId, key) {
   return this.getIn(['indices', entryId, 'attributes', key, 'values']);
 }
 
+//get all attributes that have been set for an entry
+Database.prototype.getAttributeKeys = function getAttributes(entryId) {
+  return Immutable.Set(this.getIn(['indices', entryId, 'attributes']).keys())
+}
+
 //get all entries that have a particular value for an attribute
 Database.prototype.getEntriesForAttibute = function getEntriesForAttibute(key, value) {
   let indices = this.indices.toSet().filter(index => index.attributes.has(key) && index.attributes.get(key).values.has(value));
@@ -231,7 +236,15 @@ Database.prototype.getBody = function getBody(entryId) {
   return this.indices.get(entryId).body;
 }
 
-Database.prototype.getChildren = function getChildren(entryId) {
-
-}
 //get all children for an entry
+Database.prototype.getChildren = function getChildren(entryId) {
+  return this.entries.get(entryId).childIds;
+}
+
+//erase all index data for an entry
+Database.prototype.wipeIndex = function wipeIndex(entryId) {
+  return this
+    .setIn(['indices', entryId, 'title'], null)
+    .setIn(['indices', entryId, 'body'], null)
+    .setIn(['indices', entryId, 'attributes'], Immutable.Map())
+}

@@ -1,20 +1,19 @@
 var path = require('path');
 
 var port = 8000;
-var srcClientPath = path.join(__dirname, '/../client');
-var srcCommonPath = path.join(__dirname, '/../common');
+var srcPath = path.join(__dirname, '..');
 var publicPath = '/assets/';
 
 module.exports = {
   port: port,
   debug: true,
   output: {
-    path: path.join(__dirname, '/../dist/assets'),
+    path: path.join(__dirname, '/../../dist/assets'),
     filename: 'app.js',
     publicPath: publicPath
   },
   devServer: {
-    contentBase: './client/',
+    contentBase: '../../assets/',
     historyApiFallback: true,
     hot: true,
     port: port,
@@ -34,19 +33,21 @@ module.exports = {
   resolve: {
     extensions: ['', '.js', '.jsx'],
     alias: {
-      actions: srcCommonPath + '/actions/',
-      components: srcCommonPath + '/components/',
-      sources: srcCommonPath + '/sources/',
-      stores: srcCommonPath + '/stores/',
-      styles: srcClientPath + '/styles/',
-      config: srcClientPath + '/config/' + process.env.REACT_WEBPACK_ENV
+      cfg: path.join(srcPath,'cfg'),
+      client: path.join(srcPath,'client'),
+      common: path.join(srcPath,'common'),
+      server: path.join(srcPath,'server'),
+      test: path.join(srcPath,'test'),
+      //'client/config': path.join(srcPath,'config', process.env.REACT_WEBPACK_ENV)
     }
   },
   module: {
     preLoaders: [
       {
         test: /\.(js|jsx)$/,
-        include: [srcClientPath, srcCommonPath],
+        include: [
+          path.join(srcPath,'client'), path.join(srcPath,'common'), path.join(srcPath,'test'), path.join(srcPath,'cfg')
+        ],
         loader: 'eslint-loader'
       },
 

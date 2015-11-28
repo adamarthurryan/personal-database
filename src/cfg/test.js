@@ -1,7 +1,5 @@
 var path = require('path');
-var srcClientPath = path.join(__dirname, '/../client');
-var srcCommonPath = path.join(__dirname, '/../common');
-var srcTestPath = path.join(__dirname, '/../test');
+var srcPath = path.join(__dirname, '/..');
 
 
 // Add needed plugins here
@@ -26,34 +24,31 @@ module.exports = {
         test: /\.(js|jsx)$/,
         loader: 'babel'+"?"+JSON.stringify(babelQuery),
         include: [
-          srcClientPath,
-          srcCommonPath,
-          srcTestPath
+          path.join(srcPath,'client'), path.join(srcPath,'common'), path.join(srcPath,'test'), path.join(srcPath,'cfg')
         ]
       },
       {
         test: /\.(js|jsx)$/,
         loader: 'babel'+"?"+JSON.stringify(babelQuery),
         include: [
-          srcClientPath,
-          srcCommonPath
+          path.join(srcPath,'client'), path.join(srcPath,'common'), path.join(srcPath,'test'), path.join(srcPath,'cfg')
         ],
         loader: 'isparta'
       }
     ]
   },
+  
   resolve: {
-    extensions: [ '', '.js', '.jsx' ],
+    extensions: ['', '.js', '.jsx'],
     alias: {
-      actions: path.join(srcCommonPath, 'actions/'),
-      helpers: path.join(__dirname, '/../test/helpers'),
-      components: path.join(srcCommonPath, 'components/'),
-      sources: path.join(srcCommonPath, 'sources/'),
-      stores: path.join(srcCommonPath, 'stores/'),
-      styles: path.join(srcClientPath, 'styles/'),
-      config: path.join(srcClientPath, 'config', process.env.REACT_WEBPACK_ENV)
+      cfg: path.join(srcPath,'cfg'),
+      client: path.join(srcPath,'client'),
+      common: path.join(srcPath,'common'),
+      server: path.join(srcPath,'server'),
+      test: path.join(srcPath,'test'),
+      //'client\config': path.join(srcPath,'config', process.env.REACT_WEBPACK_ENV)
     }
-  },
+  },  
   plugins: [
     new BowerWebpackPlugin({
       searchResolveModulesDirectories: false

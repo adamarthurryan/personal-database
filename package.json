@@ -13,11 +13,12 @@
     "release:major": "npm version major && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
-    "serve": "node src/server/index.js --env=dev",
-    "serve:dist": "node src/server/index.js --env=dist # !!! webpack-dev-server should not be used in production!",
+    "serve": "node babel.server.js --env=dev",
+    "serve:dist": "node babel.server.js --env=dist # !!! webpack-dev-server should not be used in production!",
     "start": "npm run serve",
     "test": "karma start",
-    "test:watch": "karma start --autoWatch=true --singleRun=false"
+    "test:watch": "karma start --autoWatch=true --singleRun=false",
+    "watch-client": "node ./node_modules/webpack/bin/webpack.js --watch --verbose --colors --display-error-details --config webpack.config.js"
   },
   "repository": "",
   "keywords": [],
@@ -49,6 +50,7 @@
     "null-loader": "^0.1.1",
     "open": "0.0.5",
     "phantomjs": "^1.9.18",
+    "piping": "^0.3.0",
     "react-hot-loader": "^1.2.9",
     "rimraf": "^2.4.3",
     "style-loader": "^0.13.0",

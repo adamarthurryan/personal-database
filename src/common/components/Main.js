@@ -1,53 +1,42 @@
-require('normalize.css');
-require('styles/Main.css');
+//require('normalize.css');
+//require('styles/Main.css');
 
-import EntryStore from 'stores/EntryStore';
-import React from 'react';
-import Entries  from './Entries';
-import Entry  from './Entry';
-import AltContainer from 'alt-container';
-import {Locations, Location} from 'react-router-component';
+import React from 'react'
+import { connect } from 'react-redux'
 
-let yeomanImage = require('../images/yeoman.png');
+import {Locations, Location} from 'react-router-component'
 
 
-
-var RootEntryContainer = <AltContainer store={EntryStore}>
-    <Entry path="" />
-  </AltContainer> 
-
-class EntryContainer extends React.Component {
-  render() {
-    return <AltContainer store={EntryStore}>
-      <Entry path={this.props._[0]}/>
-    </AltContainer> 
-  }
-}
-
-class AppComponent extends React.Component {
+class Main extends React.Component {
   constructor() {
     super();
   }
 
-
   render () {
+    // Injected by connect() call:
+    const { dispatch, db } = this.props
+
+    let entries = db.entries.valueSeq().map( entry => <li key={entry.id}>{db.getTitle(entry.id) }</li> );
 
     return (
       <div className="index">
-        
-
-        <div className="content">
-          <Locations >
-            <Location path="/" handler={RootEntryContainer} />
-            <Location path="/*" handler={EntryContainer}/>
-          </Locations>
-        </div>  
+        <ul>
+          {entries}
+        </ul>
       </div>
     );
   }
+
 }
 
-AppComponent.defaultProps = {
+// Which props do we want to inject, given the global state?
+// Note: use https://github.com/faassen/reselect for better performance.
+function select(state) {
+  return { db:state }
+}
+
+Main.defaultProps = {
 };
 
-export default AppComponent;
+// Wrap the component to inject dispatch and state into it
+export default connect(select)(Main)

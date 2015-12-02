@@ -11,8 +11,8 @@ var srcPath = path.join(__dirname, '..');
 
 var config = _.merge({
   entry: [
-    'webpack-dev-server/client?http://127.0.0.1:8000',
-    'webpack/hot/only-dev-server',
+//    'webpack-dev-server/client?http://127.0.0.1:8000',
+//    'webpack/hot/only-dev-server',
     path.join(srcPath, 'client/client.js'),
 
   ],
@@ -20,7 +20,7 @@ var config = _.merge({
   //devtool: 'cheap-module-inline-source-map, cheap-eval-source-map, #@source-map',
   devtool: 'eval-source-map',
   plugins: [
-    new webpack.HotModuleReplacementPlugin(),
+//    new webpack.HotModuleReplacementPlugin(),
     new webpack.NoErrorsPlugin(),
     new BowerWebpackPlugin({
       searchResolveModulesDirectories: false
@@ -38,7 +38,8 @@ var babelQuery =  {
 // Add needed loaders
 config.module.loaders.push({
   test: /\.(js|jsx)$/,
-  loader: 'react-hot!babel'+"?"+JSON.stringify(babelQuery),
+//  loader: 'react-hot!babel'+"?"+JSON.stringify(babelQuery),
+  loader: 'babel'+"?"+JSON.stringify(babelQuery),
 
   include: [
     path.join(srcPath,'client'), path.join(srcPath,'common'), path.join(srcPath,'cfg')

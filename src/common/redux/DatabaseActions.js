@@ -8,6 +8,7 @@ export const UPDATE_TITLE = 'UPDATE_TITLE'
 export const UPDATE_BODY = 'UPDATE_BODY'
 export const UPDATE_ATTRIBUTE = 'UPDATE_ATTRIBUTE'
 export const WIPE_INDEX = 'WIPE_INDEX'
+export const UPDATE_ATTRIBUTES = 'UPDATE_ATTRIBUTES'
 
 
 // action creators
@@ -34,6 +35,10 @@ export function updateBody(entryId, body) {
 export function updateAttribute(entryId, key, values) {
  return { type: UPDATE_ATTRIBUTE, entryId, key, values }
 }
+export function updateAttributes(entryId, attributes) {
+  return { type: UPDATE_ATTRIBUTES, entryId, attributes }
+}
+
 export function wipeIndex(entryId) {
  return { type: WIPE_INDEX, entryId }
 }

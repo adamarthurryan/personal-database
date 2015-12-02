@@ -1,8 +1,16 @@
+export const ROOT = "~"
+
 export function normalize(path) {
-  return path.replace(/\\/g, "/").replace(/(\/)+/g, "/").replace(/\/$/, "").replace(/^\//, "");
+  let normPath = path.replace(/\\/g, "/").replace(/(\/)+/g, "/").replace(/\/$/, "").replace(/^\//, "");
+  if (normPath == "")
+    return ROOT
+  else 
+    return normPath 
 }
 
 export function  getName(path) {
+  if (path == ROOT)
+    return ""
   return path.match(/[^\/]*$/)[0];
 }
 
@@ -23,15 +31,17 @@ export function stripExtension(path) {
 }
 
 export function  isDescendantOf(path, parentPath) {
+  if (parentPath == ROOT) parentPath = ""
   return path.match("^"+parentPath+"(^|/).*$") != null;
 }
 
 export function  isChildOf(path, parentPath) {
+  if (parentPath == ROOT) parentPath = ""
   return (parentPath.length < path.length) && (path.match("^"+parentPath+"(^|/)[^/]*$") != null)       
 }
 
 export function hasParent(path) {
-  return path != "";
+  return path != ROOT;
 }
 
 export function getParent(path) {
@@ -41,11 +51,11 @@ export function getParent(path) {
   let i = path.lastIndexOf('/');
 
   if (i < 0)
-    return "";
+    return ROOT;
 
   return path.slice(0, i);
 }
 
 export function isRoot(path) {
-  return path == "";
+  return path == ROOT;
 }

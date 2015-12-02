@@ -4,8 +4,9 @@
 'use strict';
 
 
-import Database from 'common/database/Database';
-import Immutable from 'immutable';
+import Database from 'common/database/Database'
+import Immutable from 'immutable'
+import * as PathTools from 'common/database/PathTools'
 
 //!!! This could be written more cleanly with chai-immutable
 
@@ -25,10 +26,10 @@ describe('Database', () => {
   });
 
   it('should add a root entry', () => {
-    db = db.addEntry('');
+    db = db.addEntry(PathTools.ROOT);
     
     expect(db.entries.size).to.eql(1);
-    expect(db.entries.has('')).to.be.true;
+    expect(db.entries.has(PathTools.ROOT)).to.be.true;
   })
 
   it('should add parent entries', () => { 
@@ -36,7 +37,7 @@ describe('Database', () => {
     db = db.addEntry('a/c');
     
     expect(db.entries.size).to.eql(4);
-    expect(db.entries.has('')).to.be.true
+    expect(db.entries.has(PathTools.ROOT)).to.be.true
     expect(db.entries.has('a')).to.be.true
     expect(db.entries.has('a/c')).to.be.true
     expect(db.entries.has('a/b')).to.be.true
@@ -69,11 +70,6 @@ describe('Database', () => {
     db = db.addEntry('a/b');
     expect(db.resources.has('a/b')).to.be.true;
     expect(db.indices.has('a/b')).to.be.true;
-  })
-
-  it('should set the root entry correctly', () => {
-    db = db.addEntry('a/b');
-    expect(db.root).to.equal('');
   })
 
   it('should not overwrite existing parent resources or indices', () => {
@@ -133,7 +129,7 @@ describe('Database', () => {
     db = db.addEntry('a/b');
     db = db.setAttribute('a/b', 'thekey', [1,2,"3"]);
 
-    let values = db.indices.get('a/b').attributes.get('thekey').values;
+    let values = db.indices.get('a/b').attributes.get('thekey');
     expect(values.size).to.equal(3); 
     expect(values.has(1)).to.be.true;
     expect(values.has(2)).to.be.true;
@@ -212,4 +208,34 @@ describe('Database', () => {
 
     expect(db.getAttributeKeys('a/b').equals(Immutable.Set(['thekey', 'anotherkey']))).to.be.true
   });
+
+  it('should revive properly after serialization', () => {
+    db = db
+      .addEntry('a/b')
+      .addResource('a/b', 'theresource')
+      .setAttribute('a/b', 'thekey', ['thevalue', 'anothervalue'])
+      .setTitle('a/b', 'thetitle')
+
+    let newdb = Database.fromJS(JSON.parse(JSON.stringify(db)))
+
+    newdb = newdb.addEntry('a/c')
+    newdb = newdb.addResource('a/c', 'theotherresource')
+    newdb = newdb.setAttribute('a/c', 'theotherkey', ['theothervalue'])
+    newdb = newdb.setAttribute('a/b', 'theotherkey', ['theothervalue'])
+
+    expect(newdb.getChildren('a')).equals(Immutable.Set(['a/b', 'a/c']))
+    expect(newdb.getResources('a/b')).equals(Immutable.Set(['theresource']))
+    expect(newdb.getAttribute('a/b', 'thekey')).equals(Immutable.Set(['thevalue', 'anothervalue']))
+    expect(newdb.getAttribute('a/b', 'theotherkey')).equals(Immutable.Set(['theothervalue']))
+    expect(newdb.getTitle('a/b')).equals('thetitle')
+
+    expect(newdb.getResources('a/c')).equals(Immutable.Set(['theotherresource']))
+    expect(newdb.getAttribute('a/c', 'theotherkey')).equals(Immutable.Set(['theothervalue']))
+
+    expect(newdb.entries.get('a').id).equals('a')
+    expect(newdb.entries.get('a/b').id).equals('a/b')
+
+
+
+  })
 });

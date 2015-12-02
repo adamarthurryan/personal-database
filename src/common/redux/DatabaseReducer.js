@@ -1,5 +1,5 @@
 
-import Database from 'common/database/Database'
+import Database from '../../common/database/Database'
 import * as Actions from './DatabaseActions'
 
 export default function databaseReducer(db = new Database(), action = {type:"NONE"}) {
@@ -24,6 +24,9 @@ export default function databaseReducer(db = new Database(), action = {type:"NON
 
     case Actions.UPDATE_ATTRIBUTE:
       return db.setAttribute(action.entryId, action.key, action.values)
+
+    case Actions.UPDATE_ATTRIBUTES:
+      return db.setAttributes(action.entryId, action.attributes)
 
     case Actions.WIPE_INDEX:
       return db.wipeIndex(action.entryId);

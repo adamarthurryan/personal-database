@@ -1,6 +1,9 @@
-import * as PathTools from 'common/database/PathTools'
+import * as PathTools from './PathTools'
 
 export function titleize(path) {
+  if (PathTools.isRoot(path))
+    return "Root"
+
   let name = PathTools.getName(path);
 
   let title = name.replace(/([^ ])-([^])/g, '$1 $2');

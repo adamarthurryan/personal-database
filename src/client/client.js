@@ -1,17 +1,34 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React from 'react'
+import ReactDOM from 'react-dom'
+import { createStore } from 'redux'
+import { Provider } from 'react-redux'
+import Main from 'common/components/Main'
+import reducer from 'common/redux/databaseReducer'
+import * as Actions from 'common/redux/DatabaseActions'
+import Database from 'common/database/Database'
 
-//import EntryActions from 'actions/EntryActions';
-//import Main  from 'components/Main';
+import SocketIo from 'socket.io-client'
+
+// Grab the state from a global injected into server-generated HTML
+const initialState = Database.fromJS(window.__INITIAL_STATE__)
+
+// Create Redux store with initial state
+const store = createStore(reducer, initialState)
+
+//whenever a database action is received through the socket, dispatch it
+let socket = SocketIo.connect('localhost:8080') 
+
+socket.on('status', data => console.log('Socket Status: ', data))
+socket.on('databaseAction', action => {
+  store.dispatch(action)
+})
 
 
-
-//EntryActions.fetchEntries();
-
-// Render the main component into the dom
 ReactDOM.render(
-      <div>
-        <h2>Under Construction</h2>
-        <p>Refactoring...</p>
-      </div>
-, document.getElementById('app'));
+  <Provider store={store}>
+    <Main />
+  </Provider>,
+  document.getElementById('app')
+)
+
+//store.dispatch(Actions.addEntry('client-side code is working'))

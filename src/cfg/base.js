@@ -7,11 +7,16 @@ var publicPath = '/assets/';
 module.exports = {
   port: port,
   debug: true,
+  node: {
+    fs: "empty"
+  },
+
   output: {
     path: path.join(__dirname, '/../../dist/assets'),
     filename: 'app.js',
     publicPath: publicPath
   },
+/*
   devServer: {
     contentBase: '../../assets/',
     historyApiFallback: true,
@@ -30,6 +35,7 @@ module.exports = {
         color: true
     }
   },
+*/
   resolve: {
     extensions: ['', '.js', '.jsx'],
     alias: {

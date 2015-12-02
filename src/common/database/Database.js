@@ -1,43 +1,17 @@
 import Immutable from 'immutable'
 
-import * as PathTools from 'common/database/PathTools'
-import * as TitleTools from 'common/database/TitleTools'
+import * as PathTools from './PathTools'
+import * as TitleTools from './TitleTools'
+
+import Index from './Index'
 
 //wu.js
 //immutable.js ?
 
-/*
-  entries (Map):
-    id (key)
-    childIds (Set)
-    parentId
-
-  resources (Map):
-    entryId (key)
-    paths (Set)
-
-  indices (Map):
-    entryId (key)
-    title
-    body
-    attributes (Map):
-      key
-      values (Set)
-  
-  // collections give a reverse lookup of the entries for each key
-  // this is an optimization which might be implemented later
-  collections (Map):
-    key
-    values (Map):
-      name
-      entryIds (Set)
-*/
-
 var Database = Immutable.Record({
-  root: null,
   entries: Immutable.Map(),
   resources: Immutable.Map(),
-  indices: Immutable.Map(),
+  indices: Immutable.Map(), //of Index records
 //  collections: Immutable.Map()
 });
 export default Database;
@@ -54,17 +28,7 @@ var Resource = Immutable.Record({
   paths: Immutable.Set() //of strings
 });
  
-var Index = Immutable.Record({
-  entryId: null,
-  title: null,
-  body: null,
-  attributes: Immutable.Map() //of Attribute records
-});
 
-var Attribute = Immutable.Record({
-  key: null, 
-  values: Immutable.Set() //of strings
-});
 
 /* collections give a reverse lookup of the entries for each key
    this is an optimization which might be implemented later
@@ -79,6 +43,52 @@ var Value = Immutable.Record({
   entryIds: Immutable.Set()
 });
 */
+
+
+Database.fromJS = function fromJS(object) {
+
+  let entries = Immutable.fromJS(object.entries, (key, value) => {
+    let isKeyed = Immutable.Iterable.isKeyed(value);
+    if (isKeyed) 
+      return (key=='') ? value.toMap() : new Entry(value)
+    else
+      return value.toSet()
+  })
+
+  let resources = Immutable.fromJS(object.resources, (key, value) => {
+    let isKeyed = Immutable.Iterable.isKeyed(value);
+    if (isKeyed) 
+      switch (key) {
+        case '':
+          return value.toMap()
+        case 'paths':
+          return value.toMap()
+        default:
+          return new Resource(value)
+      }      
+    else
+      return value.toSet()
+  })
+
+  let indices = Immutable.fromJS(object.indices, (key, value) => {
+    let isKeyed = Immutable.Iterable.isKeyed(value);
+    if (isKeyed) 
+      switch (key) {
+        case '':
+          return value.toMap()
+        case 'attributes':
+          return value.toMap()
+        default:
+          return new Index(value)
+      }
+    else
+      return value.toSet()
+  })
+
+
+  return new Database({entries, resources, indices})
+
+}
 
 
 Database.prototype.addEntry = function addEntry(id) {
@@ -101,7 +111,6 @@ Database.prototype.addEntry = function addEntry(id) {
   else {
     //add the root entry
     db = db.setIn(['entries', id], new Entry({id}));
-    db = db.setIn(['root'], id);
   }
 
   db = db.setIn(['resources', id], new Resource({entryId:id}));
@@ -184,10 +193,18 @@ Database.prototype.setTitle = function setTitle(entryId, title) {
 Database.prototype.setAttribute = function setAttribute(entryId, key, values) {
   let db = this;
 
-  if (! db.hasIn(['indices', entryId, 'attributes', key]))
-    db = db.setIn(['indices', entryId, 'attributes', key], new Attribute({key}));
+  db = db.setIn(['indices', entryId, 'attributes', key], Immutable.Set(values));
 
-  db = db.updateIn(['indices', entryId, 'attributes', key, 'values'], oldValues => Immutable.Set(values));
+  return db;
+}
+
+//set the attributes map of the entry
+//??? should this be controlled for shape?
+Database.prototype.setAttributes = function setAttributes(entryId, attributes) {
+  let db = this;
+
+  db = db.setIn(['indices', entryId, 'attributes'], attributes);
+
   return db;
 }
 
@@ -207,7 +224,7 @@ Database.prototype.getResources = function getResource(entryId) {
 
 //get all values for an attribute
 Database.prototype.getAttribute = function getAttribute(entryId, key) {
-  return this.getIn(['indices', entryId, 'attributes', key, 'values']);
+  return this.getIn(['indices', entryId, 'attributes', key]);
 }
 
 //get all attributes that have been set for an entry
@@ -217,7 +234,7 @@ Database.prototype.getAttributeKeys = function getAttributes(entryId) {
 
 //get all entries that have a particular value for an attribute
 Database.prototype.getEntriesForAttibute = function getEntriesForAttibute(key, value) {
-  let indices = this.indices.toSet().filter(index => index.attributes.has(key) && index.attributes.get(key).values.has(value));
+  let indices = this.indices.toSet().filter(index => index.attributes.has(key) && index.attributes.get(key).has(value));
 
   return indices.map(index => index.entryId);
 }

@@ -4,6 +4,8 @@ import * as Actions from 'common/redux/DatabaseActions'
 import reducer from 'common/redux/databaseReducer'
 import Database from 'common/database/Database'
 
+import * as PathTools from 'common/database/PathTools'
+
 import Immutable from 'immutable'
 
 import chaiImmutable from'chai-immutable'
@@ -29,13 +31,13 @@ describe('databaseReducer', () => {
   it('should add a new entry', () => {
     let actions = [A.addEntry('a/b'), A.addEntry('a/c')]
     let db = reduceAll(actions)
-    expect(db.entries).to.have.all.keys('', 'a', 'a/b', 'a/c')
+    expect(db.entries).to.have.all.keys(PathTools.ROOT, 'a', 'a/b', 'a/c')
   });
 
   it('should remove an entry', () => {
     let actions = [A.addEntry('a/b/d'), A.addEntry('a/b/c'), A.removeEntry('a/b')]
     let db = reduceAll(actions)
-    expect(db.entries).to.have.all.keys('', 'a')
+    expect(db.entries).to.have.all.keys(PathTools.ROOT, 'a')
   });
 
   it('should add a resource', () => {

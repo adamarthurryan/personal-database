@@ -4,8 +4,17 @@
 import chokidar from 'chokidar';
 import EventEmitter from 'events';
 import Path from 'path';
-import * as PathTools from '../../common/stores/PathTools'
+import * as PathTools from '../../common/database/PathTools'
 
+
+/* Emits the following events:
+   - addEntry (entryId)
+   - removeEntry (entryId)
+   - addResource (entryId, resoursePath)
+   - removeResource (entryId, resourcePath)
+   - updateIndex (entryId, indexPath)
+   - removeIndex (entryId)
+*/
 
 export default class FileWatcher extends EventEmitter {
   //absolute (?) path to database
@@ -19,9 +28,7 @@ export default class FileWatcher extends EventEmitter {
       persistent: true
     });
 
-
-    //watcher.on('all', (event, path) => console.log("CK:", event, ", ", path));
-
+    
     //Available events: add, addDir, change, unlink, unlinkDir, ready, raw, error. 
     //Additionally all is available which gets emitted with the underlying event name 
     //and path for every event other than ready, raw, and error.
@@ -104,5 +111,5 @@ function indexOf(path) {
 
 //return the entry id (entry path) for which this file is a resource
 function resourceOf(path) {
-  return Path.dirname(path)+"/"+Path.basename(path, '.md');
+  return Path.dirname(path);
 }

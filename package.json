@@ -6,15 +6,15 @@
   "main": "",
   "scripts": {
     "clean": "rimraf dist/*",
-    "copy": "copyfiles -f ./assets/index.html ./assets/favicon.ico ./dist",
+    "copy": "copyfiles -f ./bower_components/skeleton/**/*.css ./dist/assets/lib && copyfiles -f ./bower_components/skeleton/images/*.png ./dist/assets",
     "dist": "npm run copy & webpack --env=dist",
     "lint": "eslint ./src",
     "posttest": "npm run lint",
     "release:major": "npm version major && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
-    "serve": "node babel.server.js --env=dev",
-    "serve:dist": "node babel.server.js --env=dist # !!! webpack-dev-server should not be used in production!",
+    "serve": "npm run copy && node babel.server.js --env=dev",
+    "serve:dist": "npm run copy && node babel.server.js --env=dist",
     "start": "npm run serve",
     "test": "karma start",
     "test:watch": "karma start --autoWatch=true --singleRun=false",
@@ -68,6 +68,7 @@
     "chokidar": "^1.3.0",
     "express": "^4.13.3",
     "express-thumbnail": "^0.2.1",
+    "history": "^1.13.1",
     "immutable": "^3.7.5",
     "lodash": "^3.10.1",
     "markdown-it": "^5.0.1",
@@ -76,8 +77,9 @@
     "react-addons-test-utils": "^0.14.0",
     "react-dom": "^0.14.0",
     "react-lazy-load": "^2.0.0",
-    "react-router-component": "^0.27.2",
+    "react-router": "^1.0.0",
     "redux": "^3.0.4",
+    "redux-router": "^1.0.0-beta5",
     "superagent": "^1.4.0"
   }
 }

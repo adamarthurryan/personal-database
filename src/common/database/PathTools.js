@@ -20,7 +20,7 @@ export function  getExtension(path) {
   let match = path.match(/[^\/]+(\.[^\.\/]+)$/);
 
   if (match==null)
-    return match;
+    return "";
 
   return match[1];
 }

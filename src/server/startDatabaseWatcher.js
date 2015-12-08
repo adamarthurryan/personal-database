@@ -1,12 +1,10 @@
-import { createStore, combineReducers, applyMiddleware } from 'redux'
 
 import * as Actions from '../common/redux/DatabaseActions'
-import reducer from '../common/redux/databaseReducer'
 import IndexLoader from './io/IndexLoader'
 import FileWatcher from './io/FileWatcher'
 
 
-function startDatabase(store, databasePath) {
+export default function startDatabaseWatcher(store, databasePath) {
   var indexLoader = new IndexLoader(databasePath);
   var watcher = new FileWatcher(databasePath);
 
@@ -29,18 +27,3 @@ function startDatabase(store, databasePath) {
     console.log ("Error loading index for ", entryId, " from ", indexPath, ": ", message))
 }
 
-
-
-
-
-export default function createServerStore(databasePath, ...middlewares) {
-  // applyMiddleware takes createStore() and returns
-  // a function with a compatible API.
-  let createStoreWithMiddleware = applyMiddleware(...middlewares)(createStore)
-
-  // Use it like you would use createStore()
-  let store = createStoreWithMiddleware(reducer)
-  startDatabase(store, databasePath)
-
-  return store
-}

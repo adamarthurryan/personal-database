@@ -1,0 +1,15 @@
+{
+	"folders":
+	[
+		{
+			"path": ".",
+			"folder_exclude_patterns": ["dist", "node_modules", "cache"]
+		},
+		{
+			"path": "C:\\Users\\Adam\\Desktop\\code\\projects\\serve-index"
+		},
+		{
+			"path": "C:\\Users\\Adam\\Desktop\\code\\projects\\newlibrary-scraper"
+		}
+	]
+}

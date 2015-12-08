@@ -53,6 +53,21 @@ describe('Database', () => {
     expect(children.has('a/c')).to.be.true
   })
 
+  it('should not re-add an existing entry', () => {
+    db = db
+      .addEntry('a/b')
+      .addResource('a', 'theresource')
+      .addResource('a/b', 'theresource')
+      .setTitle('a', 'thetitle')
+      .setTitle('a/b', 'thetitle')
+
+    let updateDb = db
+        .addEntry('a')
+        .addEntry('a/b')
+
+    expect(updateDb).to.equal(db)
+  })
+
   it('should remove children and child entries of parent (but not remove parent', () => {
     db = db.addEntry('a/b');
     db = db.addEntry('a/c/d');
@@ -153,7 +168,7 @@ describe('Database', () => {
           .setAttribute('g/h', 'theotherkey', [1,2,3]);
 
     let entries = db.getEntriesForAttibute('thekey', 1);
-    expect(entries.equals(Immutable.Set(['a/b', 'e/f']))).to.be.true;
+    expect(entries).to.equal(Immutable.Set(['a/b', 'e/f']));
   })
 
   it('should get all values for an attribute', () => {
@@ -161,7 +176,7 @@ describe('Database', () => {
     db = db.setAttribute('a/b', 'thekey', [1,2,"3"]);
 
     let values=db.getAttribute('a/b', 'thekey');
-    expect(values.equals(Immutable.Set([1,2,'3']))).to.be.true;
+    expect(values).to.equal(Immutable.OrderedSet([1,2,'3']));
   })
 
   it('should get all resources for an entry', () => {
@@ -171,7 +186,7 @@ describe('Database', () => {
     db = db.addResource('a/b', 'a/b/item3.pdf');
 
     let paths = db.getResources('a/b');
-    expect(paths.equals(Immutable.Set(['a/b/item1.pdf', 'a/b/item2.pdf', 'a/b/item3.pdf']))).to.be.true;
+    expect(paths.equals(Immutable.OrderedSet(['a/b/item1.pdf', 'a/b/item2.pdf', 'a/b/item3.pdf']))).to.be.true;
   })
 
   it('should get a title and a body for an entry', () => {
@@ -197,7 +212,7 @@ describe('Database', () => {
   it('should get all children for an entry', () => {
     db = db.addEntry('a/b/c').addEntry('a/b/d').addEntry('a/b/e');
 
-    expect(db.getChildren('a/b').equals(Immutable.Set(['a/b/c', 'a/b/d', 'a/b/e']))).to.be.true;
+    expect(db.getChildren('a/b').equals(Immutable.OrderedSet(['a/b/c', 'a/b/d', 'a/b/e']))).to.be.true;
   });
 
   it('should get attribute keys for an entry', () => {
@@ -206,7 +221,7 @@ describe('Database', () => {
       .setAttribute('a/b','thekey',[1])
       .setAttribute('a/b','anotherkey', [2])
 
-    expect(db.getAttributeKeys('a/b').equals(Immutable.Set(['thekey', 'anotherkey']))).to.be.true
+    expect(db.getAttributeKeys('a/b').equals(Immutable.OrderedSet(['thekey', 'anotherkey']))).to.be.true
   });
 
   it('should revive properly after serialization', () => {
@@ -223,18 +238,36 @@ describe('Database', () => {
     newdb = newdb.setAttribute('a/c', 'theotherkey', ['theothervalue'])
     newdb = newdb.setAttribute('a/b', 'theotherkey', ['theothervalue'])
 
-    expect(newdb.getChildren('a')).equals(Immutable.Set(['a/b', 'a/c']))
-    expect(newdb.getResources('a/b')).equals(Immutable.Set(['theresource']))
-    expect(newdb.getAttribute('a/b', 'thekey')).equals(Immutable.Set(['thevalue', 'anothervalue']))
-    expect(newdb.getAttribute('a/b', 'theotherkey')).equals(Immutable.Set(['theothervalue']))
+    expect(newdb.getChildren('a')).equals(Immutable.OrderedSet(['a/b', 'a/c']))
+    expect(newdb.getResources('a/b')).equals(Immutable.OrderedSet(['theresource']))
+    expect(newdb.getAttribute('a/b', 'thekey')).equals(Immutable.OrderedSet(['thevalue', 'anothervalue']))
+    expect(newdb.getAttribute('a/b', 'theotherkey')).equals(Immutable.OrderedSet(['theothervalue']))
     expect(newdb.getTitle('a/b')).equals('thetitle')
 
-    expect(newdb.getResources('a/c')).equals(Immutable.Set(['theotherresource']))
-    expect(newdb.getAttribute('a/c', 'theotherkey')).equals(Immutable.Set(['theothervalue']))
+    expect(newdb.getResources('a/c')).equals(Immutable.OrderedSet(['theotherresource']))
+    expect(newdb.getAttribute('a/c', 'theotherkey')).equals(Immutable.OrderedSet(['theothervalue']))
 
     expect(newdb.entries.get('a').id).equals('a')
     expect(newdb.entries.get('a/b').id).equals('a/b')
 
+  })
+
+  it('should be invariant when updating with identical data', () => {
+    db = db
+      .addEntry('a/b').addEntry('a/c')
+      .addResource('a/b', 'theresource')
+      .setTitle('a/b', 'thetitle')
+      .setAttribute('a/c', 'thekey', ['thevalue', 'anothervalue'])
+      .setBody('a/b', 'blahblah')
+
+    let db2 = db
+      .addEntry('a/b').addEntry('a/c')
+      .addResource('a/b', 'theresource')
+      .setTitle('a/b', 'thetitle')
+      .setBody('a/b', 'blahblah')
+      .setAttribute('a/c', 'thekey', ['thevalue', 'anothervalue'])
+
+    expect(db).to.equal(db2)
 
 
   })

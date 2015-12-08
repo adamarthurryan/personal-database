@@ -9,23 +9,23 @@ import Index from './Index'
 //immutable.js ?
 
 var Database = Immutable.Record({
-  entries: Immutable.Map(),
-  resources: Immutable.Map(),
-  indices: Immutable.Map(), //of Index records
-//  collections: Immutable.Map()
+  entries: Immutable.OrderedMap(),
+  resources: Immutable.OrderedMap(),
+  indices: Immutable.OrderedMap(), //of Index records
+//  collections: Immutable.OrderedMap()
 });
 export default Database;
 
 
 var Entry = Immutable.Record({
   id: null, 
-  childIds: Immutable.Set(), //of strings
+  childIds: Immutable.OrderedSet(), //of strings
   parentId: null
 }); 
 
 var Resource = Immutable.Record({
   entryId: null,
-  paths: Immutable.Set() //of strings
+  paths: Immutable.OrderedSet() //of strings
 });
  
 
@@ -35,12 +35,12 @@ var Resource = Immutable.Record({
 
 var Collections = Immutable.Record({
   key: null,
-  values: Immutable.Map() //of Value records
+  values: Immutable.OrderedMap() //of Value records
 })
 
 var Value = Immutable.Record({
   name: null,
-  entryIds: Immutable.Set()
+  entryIds: Immutable.OrderedSet()
 });
 */
 
@@ -52,7 +52,7 @@ Database.fromJS = function fromJS(object) {
     if (isKeyed) 
       return (key=='') ? value.toMap() : new Entry(value)
     else
-      return value.toSet()
+      return value.toOrderedSet()
   })
 
   let resources = Immutable.fromJS(object.resources, (key, value) => {
@@ -60,14 +60,14 @@ Database.fromJS = function fromJS(object) {
     if (isKeyed) 
       switch (key) {
         case '':
-          return value.toMap()
+          return value.toOrderedMap()
         case 'paths':
-          return value.toMap()
+          return value.toOrderedMap()
         default:
           return new Resource(value)
       }      
     else
-      return value.toSet()
+      return value.toOrderedSet()
   })
 
   let indices = Immutable.fromJS(object.indices, (key, value) => {
@@ -75,24 +75,29 @@ Database.fromJS = function fromJS(object) {
     if (isKeyed) 
       switch (key) {
         case '':
-          return value.toMap()
+          return value.toOrderedMap()
         case 'attributes':
-          return value.toMap()
+          return value.toOrderedMap()
         default:
           return new Index(value)
       }
     else
-      return value.toSet()
+      return value.toOrderedSet()
   })
 
 
-  return new Database({entries, resources, indices})
+  return new Database({entries:entries.toOrderedMap(), resources:resources.toOrderedMap(), indices:indices.toOrderedMap()})
 
 }
 
 
 Database.prototype.addEntry = function addEntry(id) {
   let db = this;
+
+  //do nothing if this entry is already in the database
+  //we assume that it has all the necessary bits and pieces
+  if (db.entries.has(id))
+    return db;
 
   if (!PathTools.isRoot(id)) {
     //calculate parent id
@@ -193,7 +198,7 @@ Database.prototype.setTitle = function setTitle(entryId, title) {
 Database.prototype.setAttribute = function setAttribute(entryId, key, values) {
   let db = this;
 
-  db = db.setIn(['indices', entryId, 'attributes', key], Immutable.Set(values));
+  db = db.setIn(['indices', entryId, 'attributes', key], Immutable.OrderedSet(values));
 
   return db;
 }
@@ -229,7 +234,7 @@ Database.prototype.getAttribute = function getAttribute(entryId, key) {
 
 //get all attributes that have been set for an entry
 Database.prototype.getAttributeKeys = function getAttributes(entryId) {
-  return Immutable.Set(this.getIn(['indices', entryId, 'attributes']).keys())
+  return Immutable.OrderedSet(this.getIn(['indices', entryId, 'attributes']).keys())
 }
 
 //get all entries that have a particular value for an attribute
@@ -263,5 +268,5 @@ Database.prototype.wipeIndex = function wipeIndex(entryId) {
   return this
     .setIn(['indices', entryId, 'title'], null)
     .setIn(['indices', entryId, 'body'], null)
-    .setIn(['indices', entryId, 'attributes'], Immutable.Map())
+    .setIn(['indices', entryId, 'attributes'], Immutable.OrderedMap())
 }

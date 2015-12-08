@@ -1,21 +1,23 @@
 import React from 'react';
 
+import * as PathTools from '../database/PathTools'
+
 
 export default class ResourceThumb extends React.Component { 
   render() {
-    if (! this.props.resource)
-      //should have a better loading display
-      return <p>Loading</p> 
+    let thumbOptions = "thumb="+this.props.size;
 
-    var thumbOptions = "thumb="+this.props.size;
+    let [_, width, height]= this.props.size.match(/(\d+)x(\d+)/)
+
+    var style = {
+      width, height
+    }
 
     //!!! Not sure if the <a> tags are a good idea
     // perhaps the image should be shown in a react component
 
-    return <div className="resource resource-thumb">
-      <a href={"/static/"+this.props.resource.path}>
-        <img src={"/static/"+this.props.resource.path+"?"+thumbOptions} alt={this.props.resource.name}/>
-      </a>
+    return <div style={style} className="resource resource-thumb">
+      <img className='u-max-full-width' src={"/static/"+this.props.resource+"?"+thumbOptions} alt={PathTools.getName(this.props.resource)}/>
     </div>
   }
 }

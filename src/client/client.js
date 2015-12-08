@@ -1,3 +1,4 @@
+
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { createStore } from 'redux'
@@ -8,6 +9,10 @@ import * as Actions from 'common/redux/DatabaseActions'
 import Database from 'common/database/Database'
 
 import SocketIo from 'socket.io-client'
+
+import { Router } from 'react-router'
+import  createBrowserHistory  from 'history/lib/createBrowserHistory'
+import routes from 'common/routes'
 
 // Grab the state from a global injected into server-generated HTML
 const initialState = Database.fromJS(window.__INITIAL_STATE__)
@@ -26,7 +31,9 @@ socket.on('databaseAction', action => {
 
 ReactDOM.render(
   <Provider store={store}>
-    <Main />
+    <Router history={createBrowserHistory()}>
+      {routes}
+    </Router>
   </Provider>,
   document.getElementById('app')
 )

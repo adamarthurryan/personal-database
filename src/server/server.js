@@ -10,20 +10,24 @@ import path from 'path'
 import {Server} from 'http'
 
 import FileWatcher from './io/FileWatcher'
-import Main from '../common/components/Main'
-import createServerStore from './createServerStore'
+import startDatabaseWatcher from './startDatabaseWatcher'
+import Renderer from './Renderer'
+import DatabaseCache from './io/DatabaseCache'
 
-import React from 'react'
-import { renderToString } from 'react-dom/server'
-import { Provider } from 'react-redux'
+import { createStore, combineReducers, applyMiddleware } from 'redux'
+
+
+
+import databaseReducer from '../common/redux/databaseReducer'
 
 var SocketIo = require('socket.io')
 
 
 
-var databaseFolder = 'static/other-images'
+var databaseFolder = 'static'
 var databasePath = path.resolve(__dirname, '..', '..', databaseFolder);
 var assetsPath = path.resolve(__dirname, '..', '..', 'dist')
+var cacheFilePath = path.resolve(__dirname, '..', '..', 'cache', 'db.json')
 console.log('assets path: ',assetsPath)
 console.log('database path: ',databasePath)
 
@@ -34,36 +38,77 @@ server.listen(8080)
 var io = SocketIo(server)
 
 
-const socketEventMiddleware = store => next => action => {
-  io.emit('databaseAction', action)
 
-  return next(action)
-}
-
-//express-thumbnail allows serving on-demand thumbnails 
+//express-thumbnail allows serving on-demand thumbnails
+//how do we handle errors here, so the thumbnail requests don't just get passed on? 
 var expressThumbnail = require('express-thumbnail');
 app.use('/static', expressThumbnail.register(databasePath));
 
+//serve the static files
+app.use('/static', express.static(databasePath));
 //serve the static files and the json index
-//app.use('/static', express.static(databasePath));
-app.use( '/static', serveIndex(databasePath, {'jsonStats':true}));
+//app.use( '/static', serveIndex(databasePath, {'jsonStats':true}));
+
+app.use(express.static(assetsPath))
 
 
-app.use( express.static(assetsPath))
+//create database cache
+let databaseCache = new DatabaseCache(cacheFilePath)
 
 
+//this middleware emits a socket event if the action results in a change to the database
+//otherwise, no event is emittted
+const socketEventMiddleware = store => next => action => {
+  let initialState = store.getState()
+  let result = next(action)
+
+  if (! store.getState().equals(initialState)) {
+    io.emit('databaseAction', action)
+  }
+
+  return result
+}
+
+const notifyCacheMiddleware = store => next => action => {
+  let result = next(action)
+
+  databaseCache.notifyUpdate(store.getState())
+
+  return result
+}
 
 //dispatch logging middleware for redux store
-const logger = store => next => action => {
+const loggerMiddleware = store => next => action => {
   console.log('dispatching', action)
   let result = next(action)
   console.log('next state', store.getState())
   return result
 }
 
-var store=createServerStore(databasePath, /*logger,*/ socketEventMiddleware);
-app.use(handleRender)
 
+var store=createServerStore(databasePath, databaseReducer, socketEventMiddleware, notifyCacheMiddleware 
+  /*loggerMiddleware*/ 
+  );
+
+
+function createServerStore(databasePath, reducer, ...middlewares) {
+  // applyMiddleware takes createStore() and returns
+  // a function with a compatible API 
+  let createStoreWithMiddleware = applyMiddleware(...middlewares)(createStore)
+
+  //load the cached database from the cache
+  let cachedDb = databaseCache.readCache()  
+  let store = createStoreWithMiddleware(reducer, cachedDb)
+
+
+
+  startDatabaseWatcher(store, databasePath)
+  return store
+}
+
+
+let renderer = new Renderer(store)
+app.use(renderer.handleRender.bind(renderer))
 
 //this middleware doesn't seem to work:
 //var webpackDevMiddleware = require("webpack-dev-middleware");
@@ -116,39 +161,3 @@ io.on('connection', function (socket) {
 })
 
 
-
-
-function handleRender(req, res) {
-
-  // Render the component to a string
-  const html = renderToString(
-    <Provider store={store}>
-      <Main />
-    </Provider>
-  )
-
-  // Grab the initial state from our Redux store
-  const initialState = store.getState()
-
-  // Send the rendered page back to the client
-  res.send(renderFullPage(html, initialState))
-}
-
-function renderFullPage(html, initialState) {
-  return `
-    <!doctype html>
-    <html>
-      <head>
-        <title>Redux Universal Example</title>
-      </head>
-      <body>
-        <div id="app">${html}</div>
-        <script>
-          window.__INITIAL_STATE__ = ${JSON.stringify(initialState)}
-        </script>
-        <!-- <script>__REACT_DEVTOOLS_GLOBAL_HOOK__ = parent.__REACT_DEVTOOLS_GLOBAL_HOOK__</script> -->
-        <script type="text/javascript" src="assets/app.js"></script>
-      </body>
-    </html>
-    `
-}

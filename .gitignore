@@ -1,5 +1,6 @@
 dist/assets
 static
+cache/*.json
 
 # Logs
 logs

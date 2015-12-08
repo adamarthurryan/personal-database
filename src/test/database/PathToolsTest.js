@@ -58,14 +58,14 @@ describe('PathTools', () => {
   it ('should get extension parts' , () => {
     let f = PathTools.getExtension;
     expect(f('a.md')).to.eql('.md');
-    expect(f('a')).to.be.null;
-    expect(f('.bashrc')).to.be.null;
+    expect(f('a')).to.eql('');
+    expect(f('.bashrc')).to.eql('');
     expect(f('a/a.md')).to.eql('.md');
-    expect(f('a/a')).to.be.null;
-    expect(f('a/.bashrc')).to.be.null;
+    expect(f('a/a')).to.eql('');
+    expect(f('a/.bashrc')).to.eql('');
     expect(f('a/b.b/a.md')).to.eql('.md');
-    expect(f('a/b.b/a')).to.be.null;
-    expect(f('a/b.b/.bashrc')).to.be.null;
+    expect(f('a/b.b/a')).to.eql('');
+    expect(f('a/b.b/.bashrc')).to.eql('');
   });
   it ('should strip extension parts' , () => {
     let f = PathTools.stripExtension;

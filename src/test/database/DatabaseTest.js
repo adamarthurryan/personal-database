@@ -85,8 +85,8 @@ describe('Database', () => {
   it('should create empty resources and indices for new entries and their parents', () => {
     db = db.addEntry('a/b');
     let entry = db.getEntry('a/b')
-    expect(entry.attributes).to.be.equal(Immutable.OrderedMap([]))
-    expect(entry.resourcePaths).to.be.equal(Immutable.OrderedSet([]))
+    expect(entry.attributes).to.be.equal(Immutable.Map([]))
+    expect(entry.resourcePaths).to.be.equal(Immutable.Set([]))
   })
 
   it('should not overwrite existing parent resources or indices', () => {
@@ -97,7 +97,7 @@ describe('Database', () => {
     db = db.addEntry('a/c');
 
     expect(db.getTitle('a')).to.equal('a title');
-    expect(db.getResources('a')).to.equal(Immutable.OrderedSet(['a/test.jpg']));
+    expect(db.getResources('a')).to.equal(Immutable.Set(['a/test.jpg']));
   })
 
   it('should add resources to the appropriate entry', () => {
@@ -161,7 +161,7 @@ describe('Database', () => {
           .setAttribute('g/h', 'theotherkey', [1,2,3]);
 
     let entries = db.getEntriesForAttibute('thekey', 1);
-    expect(entries).to.equal(Immutable.OrderedSet(['a/b', 'e/f']));
+    expect(entries).to.equal(Immutable.Set(['a/b', 'e/f']));
   })
 
   it('should get all values for an attribute', () => {
@@ -169,7 +169,7 @@ describe('Database', () => {
     db = db.setAttribute('a/b', 'thekey', [1,2,"3"]);
 
     let values=db.getAttribute('a/b', 'thekey');
-    expect(values).to.equal(Immutable.OrderedSet([1,2,'3']));
+    expect(values).to.equal(Immutable.Set([1,2,'3']));
   })
 
   it('should get all resources for an entry', () => {
@@ -179,7 +179,7 @@ describe('Database', () => {
     db = db.addResource('a/b', 'a/b/item3.pdf');
 
     let paths = db.getResources('a/b');
-    expect(paths.equals(Immutable.OrderedSet(['a/b/item1.pdf', 'a/b/item2.pdf', 'a/b/item3.pdf']))).to.be.true;
+    expect(paths.equals(Immutable.Set(['a/b/item1.pdf', 'a/b/item2.pdf', 'a/b/item3.pdf']))).to.be.true;
   })
 
   it('should get a title and a body for an entry', () => {
@@ -205,7 +205,7 @@ describe('Database', () => {
   it('should get all children for an entry', () => {
     db = db.addEntry('a/b/c').addEntry('a/b/d').addEntry('a/b/e');
 
-    expect(db.getChildren('a/b').equals(Immutable.OrderedSet(['a/b/c', 'a/b/d', 'a/b/e']))).to.be.true;
+    expect(db.getChildren('a/b').equals(Immutable.Set(['a/b/c', 'a/b/d', 'a/b/e']))).to.be.true;
   });
 
   it('should get attribute keys for an entry', () => {
@@ -213,7 +213,7 @@ describe('Database', () => {
     db = db.setAttribute('a/b','thekey',[1])
     db = db.setAttribute('a/b','anotherkey', [2])
 
-    expect(db.getAttributeKeys('a/b')).to.be.equal(Immutable.OrderedSet(['thekey', 'anotherkey']))
+    expect(db.getAttributeKeys('a/b')).to.be.equal(Immutable.Set(['thekey', 'anotherkey']))
   });
 
   it('should revive properly after serialization', () => {
@@ -230,14 +230,14 @@ describe('Database', () => {
     newdb = newdb.setAttribute('a/c', 'theotherkey', ['theothervalue'])
     newdb = newdb.setAttribute('a/b', 'theotherkey', ['theothervalue'])
 
-    expect(newdb.getChildren('a')).equals(Immutable.OrderedSet(['a/b', 'a/c']))
-    expect(newdb.getResources('a/b')).equals(Immutable.OrderedSet(['theresource']))
-    expect(newdb.getAttribute('a/b', 'thekey')).equals(Immutable.OrderedSet(['thevalue', 'anothervalue']))
-    expect(newdb.getAttribute('a/b', 'theotherkey')).equals(Immutable.OrderedSet(['theothervalue']))
+    expect(newdb.getChildren('a')).equals(Immutable.Set(['a/b', 'a/c']))
+    expect(newdb.getResources('a/b')).equals(Immutable.Set(['theresource']))
+    expect(newdb.getAttribute('a/b', 'thekey')).equals(Immutable.Set(['thevalue', 'anothervalue']))
+    expect(newdb.getAttribute('a/b', 'theotherkey')).equals(Immutable.Set(['theothervalue']))
     expect(newdb.getTitle('a/b')).equals('thetitle')
 
-    expect(newdb.getResources('a/c')).equals(Immutable.OrderedSet(['theotherresource']))
-    expect(newdb.getAttribute('a/c', 'theotherkey')).equals(Immutable.OrderedSet(['theothervalue']))
+    expect(newdb.getResources('a/c')).equals(Immutable.Set(['theotherresource']))
+    expect(newdb.getAttribute('a/c', 'theotherkey')).equals(Immutable.Set(['theothervalue']))
 
     expect(newdb.entries.get('a').id).equals('a')
     expect(newdb.entries.get('a/b').id).equals('a/b')
@@ -271,6 +271,6 @@ describe('Database', () => {
 
     let entry = db.getEntry('a/b')
     expect(entry).to.include.keys(['id', 'title', 'body', 'attributes', 'resourcePaths', 'parentId', 'childIds'])
-    expect(entry.isSuperset(Immutable.OrderedMap({id:'a/b', title:'thetitle', resourcePaths:Immutable.OrderedSet(['theresource']), parentId:'a', childIds:Immutable.OrderedSet([])}))).to.be.true
+    expect(entry.isSuperset(Immutable.Map({id:'a/b', title:'thetitle', resourcePaths:Immutable.Set(['theresource']), parentId:'a', childIds:Immutable.Set([])}))).to.be.true
   })
 });

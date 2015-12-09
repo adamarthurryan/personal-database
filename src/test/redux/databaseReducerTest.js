@@ -54,7 +54,7 @@ describe('databaseReducer', () => {
       A.removeResource('a/b', 'a/b/test.jpg')]
     let db = reduceAll(actions)
 
-    expect(db.getResources('a/b')).to.equal(Immutable.OrderedSet(['a/b/test2.jpg']))
+    expect(db.getResources('a/b')).to.equal(Immutable.Set(['a/b/test2.jpg']))
   })
 
   it('should set the title and body', () => {
@@ -86,7 +86,7 @@ describe('databaseReducer', () => {
     ]
     let db = reduceAll(actions)
 
-    expect(db.getAttribute('a/b', 'thekey')).to.equal(Immutable.OrderedSet([1,2,3]))
+    expect(db.getAttribute('a/b', 'thekey')).to.equal(Immutable.Set([1,2,3]))
   })
 
   it('should set multiple attributes', () => {
@@ -96,7 +96,7 @@ describe('databaseReducer', () => {
     ]
     let db = reduceAll(actions)
 
-    expect(db.getAttribute('a/b', 'thekey')).to.equal(Immutable.OrderedSet([1,2,3]))
+    expect(db.getAttribute('a/b', 'thekey')).to.equal(Immutable.Set([1,2,3]))
   })
 
   it('should update attributes', () => {
@@ -108,7 +108,7 @@ describe('databaseReducer', () => {
     ]
     let db = reduceAll(actions)
 
-    expect(db.getAttribute('a/b', 'thekey')).to.equal(Immutable.OrderedSet(['a', 'b', 'c']))
+    expect(db.getAttribute('a/b', 'thekey')).to.equal(Immutable.Set(['a', 'b', 'c']))
   })
 
   it('should wipe attributes', () => {

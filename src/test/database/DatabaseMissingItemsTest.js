@@ -28,6 +28,6 @@ describe('Database when querying missing items', () => {
   it('should return an empty set for no attributes', ()=>{
     db.addEntry('a/b')
 
-    expect(db.getAttributeKeys('a/b')).to.equal(Immutable.OrderedSet([]))
+    expect(db.getAttributeKeys('a/b')).to.equal(Immutable.Set([]))
   })
 })

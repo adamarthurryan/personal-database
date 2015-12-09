@@ -38,7 +38,7 @@ export function parse(source) {
 
     attributes = attrKeyValues.map(kvpair => {
       let [ignore, key, valueString] = kvpair
-      return [key, Immutable.OrderedSet(valueString.match(reAttrValue))]
+      return [key, Immutable.Set(valueString.match(reAttrValue))]
     })
 
     source = source.replace(reAttrBlock, '')
@@ -46,7 +46,7 @@ export function parse(source) {
       source = null
   }
 
-  attributes = Immutable.OrderedMap(attributes)
+  attributes = Immutable.Map(attributes)
   let body = source
   
   let index = new Index({title, body, attributes})

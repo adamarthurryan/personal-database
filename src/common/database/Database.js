@@ -15,19 +15,19 @@ import Index from './Index'
 //??? should entry/resource/index be merged into a single object? Why are they separate?
 
 var Database = Immutable.Record({
-  entries: Immutable.OrderedMap(), //of Entries
+  entries: Immutable.Map(), //of Entries
 });
 export default Database;
 
 
 var Entry = Immutable.Record({
   id: null,
-  childIds: Immutable.OrderedSet(),
+  childIds: Immutable.Set(),
   parentId: null,
-  resourcePaths: Immutable.OrderedSet(),
+  resourcePaths: Immutable.Set(),
   title: null,
   body: null,
-  attributes: Immutable.OrderedMap()
+  attributes: Immutable.Map()
 });
 
 /* collections give a reverse lookup of the entries for each attribute key
@@ -35,12 +35,12 @@ var Entry = Immutable.Record({
 
 var Collections = Immutable.Record({
   key: null,
-  values: Immutable.OrderedMap() //of Value records
+  values: Immutable.Map() //of Value records
 })
 
 var Value = Immutable.Record({
   name: null,
-  ids: Immutable.OrderedSet()
+  ids: Immutable.Set()
 });
 */
 
@@ -52,20 +52,20 @@ Database.fromJS = function fromJS(object) {
     if (isKeyed) 
       switch (key) {
         case '':
-          return value.toOrderedMap()
+          return value.toMap()
         //resourcePaths and childIds should be non-keyed
         //case 'resourcePaths': case 'childIds'
-        //  return value.toOrderedSet()
+        //  return value.toSet()
         case 'attributes': 
-          return value.toOrderedMap()
+          return value.toMap()
         default:
           return new Entry(value)
       }      
     else
-      return value.toOrderedSet()
+      return value.toSet()
   })
 
-  return new Database({entries:entries.toOrderedMap()})
+  return new Database({entries:entries.toMap()})
 
 }
 
@@ -184,7 +184,7 @@ Database.prototype.setTitle = function setTitle(id, title) {
 Database.prototype.setAttribute = function setAttribute(id, key, values) {
   let db = this;
 
-  db = db.setIn(['entries', id, 'attributes', key], Immutable.OrderedSet(values));
+  db = db.setIn(['entries', id, 'attributes', key], Immutable.Set(values));
 
   return db;
 }
@@ -197,9 +197,9 @@ Database.prototype.setAttributes = function setAttributes(id, attributes) {
   db = db.setIn(['entries', id, 'attributes'], Immutable.fromJS(attributes, (key, value) => {
     switch (key) {
       case '':
-        return value.toOrderedMap()
+        return value.toMap()
       default:
-        return value.toOrderedSet(value)
+        return value.toSet(value)
     }
   }));
   return db;
@@ -233,17 +233,17 @@ Database.prototype.hasAttribute = function hasAttribute(id, key) {
 //get all attributes that have been set for an entry
 Database.prototype.getAttributeKeys = function getAttributeKeys(id) {
   if (!this.hasIn(['entries', id, 'attributes']))
-    return Immutable.OrderedSet([])
+    return Immutable.Set([])
 
   let keys = this.getIn(['entries', id, 'attributes']).keys()
-  return Immutable.OrderedSet(keys)
+  return Immutable.Set(keys)
 }
 
 //get all entries that have a particular value for an attribute
 Database.prototype.getEntriesForAttibute = function getEntriesForAttibute(key, value) {
   let entries = this.entries.filter((entry) => entry.attributes.has(key) && entry.attributes.get(key).has(value))
 
-  return entries.map(entry=>entry.id).toOrderedSet()
+  return entries.map(entry=>entry.id).toSet()
 }
 
 //get title for an entry
@@ -270,5 +270,5 @@ Database.prototype.wipeIndex = function wipeIndex(id) {
   return this
     .setIn(['entries', id, 'title'], null)
     .setIn(['entries', id, 'body'], null)
-    .setIn(['entries', id, 'attributes'], Immutable.OrderedMap())
+    .setIn(['entries', id, 'attributes'], Immutable.Map())
 }

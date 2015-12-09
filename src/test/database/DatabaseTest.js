@@ -8,7 +8,10 @@ import Database from 'common/database/Database'
 import Immutable from 'immutable'
 import * as PathTools from 'common/database/PathTools'
 
-//!!! This could be written more cleanly with chai-immutable
+import chaiImmutable from 'chai-immutable'
+chai.use(chaiImmutable)
+let expect = chai.expect //is this necessary?
+
 
 describe('Database', () => {
 
@@ -21,8 +24,6 @@ describe('Database', () => {
   it('should start with an empty database', () => {
     expect(db).to.be.ok; 
     expect(db.entries.size).to.eql(0);
-    expect(db.resources.size).to.eql(0);
-    expect(db.indices.size).to.eql(0);
   });
 
   it('should add a root entry', () => {
@@ -83,8 +84,9 @@ describe('Database', () => {
 
   it('should create empty resources and indices for new entries and their parents', () => {
     db = db.addEntry('a/b');
-    expect(db.resources.has('a/b')).to.be.true;
-    expect(db.indices.has('a/b')).to.be.true;
+    let entry = db.getEntry('a/b')
+    expect(entry.attributes).to.be.equal(Immutable.OrderedMap([]))
+    expect(entry.resourcePaths).to.be.equal(Immutable.OrderedSet([]))
   })
 
   it('should not overwrite existing parent resources or indices', () => {
@@ -94,33 +96,24 @@ describe('Database', () => {
 
     db = db.addEntry('a/c');
 
-    expect(db.indices.get('a').title).to.equal('a title');
-    expect(db.resources.get('a').resourcePaths.has('a/test.jpg')).to.be.true;
+    expect(db.getTitle('a')).to.equal('a title');
+    expect(db.getResources('a')).to.equal(Immutable.OrderedSet(['a/test.jpg']));
   })
 
   it('should add resources to the appropriate entry', () => {
     db = db.addEntry('a/b');
     db = db.addResource('a/b', 'a/b/test.jpg');
-    expect(db.resources.get('a/b').resourcePaths.has('a/b/test.jpg')).to.be.true;
-    expect(db.resources.get('a/b').resourcePaths.size).to.equal(1);
+    expect(db.getResources('a/b').has('a/b/test.jpg')).to.be.true;
+    expect(db.getResources('a/b').size).to.equal(1);
   })
 
-  it('should delete resources and index when entry is deleted', () => {
-    db = db.addEntry('a/b');
-    db = db.addResource('a/b', 'a/b/test.jpg');
-    db = db.removeEntry('a/b');
-
-    expect(db.resources.has('a/b')).to.be.false;
-    expect(db.indices.has('a/b')).to.be.false;
-  })
-
-  it('should delete resources and index when parent entry is deleted', () => {
+  
+  it('should delete entries when parent entry is deleted', () => {
     db = db.addEntry('a/b');
     db = db.addResource('a/b', 'a/b/test.jpg');
     db = db.removeEntry('a');
 
-    expect(db.resources.has('a/b')).to.be.false;
-    expect(db.indices.has('a/b')).to.be.false;
+    expect(db.hasEntry('a/b')).to.be.false;
   })
 
   it('should delete resources when requested', () => {
@@ -128,7 +121,7 @@ describe('Database', () => {
     db = db.addResource('a', 'a/b/test.jpg');
     db = db.removeResource('a', 'a/b/test.jpg');
 
-    expect(db.resources.get('a').resourcePaths.size).to.equal(0);
+    expect(db.getResources('a').size).to.equal(0);
   });
 
   it('should allow setting index information', () => {
@@ -136,15 +129,15 @@ describe('Database', () => {
     db = db.setTitle('a/b', 'title a');
     db = db.setBody('a/b', 'body a');
 
-    expect(db.indices.get('a/b').title).to.equal('title a');
-    expect(db.indices.get('a/b').body).to.equal('body a');
+    expect(db.getTitle('a/b')).to.equal('title a');
+    expect(db.getBody('a/b')).to.equal('body a');
   })
 
   it('should allow setting new attributes', () => {
     db = db.addEntry('a/b');
     db = db.setAttribute('a/b', 'thekey', [1,2,"3"]);
 
-    let values = db.indices.get('a/b').attributes.get('thekey');
+    let values = db.getAttribute('a/b','thekey');
     expect(values.size).to.equal(3); 
     expect(values.has(1)).to.be.true;
     expect(values.has(2)).to.be.true;
@@ -156,7 +149,7 @@ describe('Database', () => {
     db = db.setAttribute('a/b', 'thekey', [1,2,"3"]);
     db = db.removeAttribute('a/b', 'thekey');
 
-    expect(db.indices.get('a/b').attributes.has('thekey')).to.be.false;
+    expect(db.getAttribute('a/b', 'thekey')).to.be.undefined;
   })
 
   it('should get all entries that have a particular value for an attribute', () => {
@@ -168,7 +161,7 @@ describe('Database', () => {
           .setAttribute('g/h', 'theotherkey', [1,2,3]);
 
     let entries = db.getEntriesForAttibute('thekey', 1);
-    expect(entries).to.equal(Immutable.Set(['a/b', 'e/f']));
+    expect(entries).to.equal(Immutable.OrderedSet(['a/b', 'e/f']));
   })
 
   it('should get all values for an attribute', () => {
@@ -216,12 +209,11 @@ describe('Database', () => {
   });
 
   it('should get attribute keys for an entry', () => {
-    db = db
-      .addEntry('a/b')
-      .setAttribute('a/b','thekey',[1])
-      .setAttribute('a/b','anotherkey', [2])
+    db = db.addEntry('a/b')
+    db = db.setAttribute('a/b','thekey',[1])
+    db = db.setAttribute('a/b','anotherkey', [2])
 
-    expect(db.getAttributeKeys('a/b').equals(Immutable.OrderedSet(['thekey', 'anotherkey']))).to.be.true
+    expect(db.getAttributeKeys('a/b')).to.be.equal(Immutable.OrderedSet(['thekey', 'anotherkey']))
   });
 
   it('should revive properly after serialization', () => {

@@ -15,15 +15,12 @@ import Index from './Index'
 //??? should entry/resource/index be merged into a single object? Why are they separate?
 
 var Database = Immutable.Record({
-  entries: Immutable.OrderedMap(),
-  resources: Immutable.OrderedMap(),
-  indices: Immutable.OrderedMap(), //of Index records
-//  collections: Immutable.OrderedMap()
+  entries: Immutable.OrderedMap(), //of Entries
 });
 export default Database;
 
 
-var FullEntry = Immutable.Record({
+var Entry = Immutable.Record({
   id: null,
   childIds: Immutable.OrderedSet(),
   parentId: null,
@@ -33,18 +30,7 @@ var FullEntry = Immutable.Record({
   attributes: Immutable.OrderedMap()
 });
 
-var Entry = Immutable.Record({
-  id: null, 
-  childIds: Immutable.OrderedSet(), //of strings
-  parentId: null
-}); 
-
-var Resource = Immutable.Record({
-  id: null,
-  resourcePaths: Immutable.OrderedSet() //of strings
-});
-
-/* collections give a reverse lookup of the entries for each key
+/* collections give a reverse lookup of the entries for each attribute key
    this is an optimization which might be implemented later
 
 var Collections = Immutable.Record({
@@ -64,43 +50,22 @@ Database.fromJS = function fromJS(object) {
   let entries = Immutable.fromJS(object.entries, (key, value) => {
     let isKeyed = Immutable.Iterable.isKeyed(value);
     if (isKeyed) 
-      return (key=='') ? value.toMap() : new Entry(value)
-    else
-      return value.toOrderedSet()
-  })
-
-  let resources = Immutable.fromJS(object.resources, (key, value) => {
-    let isKeyed = Immutable.Iterable.isKeyed(value);
-    if (isKeyed) 
       switch (key) {
         case '':
           return value.toOrderedMap()
-        case 'resourcePaths':
+        //resourcePaths and childIds should be non-keyed
+        //case 'resourcePaths': case 'childIds'
+        //  return value.toOrderedSet()
+        case 'attributes': 
           return value.toOrderedMap()
         default:
-          return new Resource(value)
+          return new Entry(value)
       }      
     else
       return value.toOrderedSet()
   })
 
-  let indices = Immutable.fromJS(object.indices, (key, value) => {
-    let isKeyed = Immutable.Iterable.isKeyed(value);
-    if (isKeyed) 
-      switch (key) {
-        case '':
-          return value.toOrderedMap()
-        case 'attributes':
-          return value.toOrderedMap()
-        default:
-          return new Index(value)
-      }
-    else
-      return value.toOrderedSet()
-  })
-
-
-  return new Database({entries:entries.toOrderedMap(), resources:resources.toOrderedMap(), indices:indices.toOrderedMap()})
+  return new Database({entries:entries.toOrderedMap()})
 
 }
 
@@ -132,9 +97,6 @@ Database.prototype.addEntry = function addEntry(id) {
     db = db.setIn(['entries', id], new Entry({id}));
   }
 
-  db = db.setIn(['resources', id], new Resource({id:id}));
-  db = db.setIn(['indices', id], new Index({id:id}));
-
   return db;
 }
 
@@ -147,9 +109,6 @@ function _simpleRemoveEntry(db, id) {
   //delete the entry itself
   db = db.deleteIn(['entries', id]);
 
-  //remove the associated index, resources and collections
-  db = db.deleteIn(['resources', id]);
-  db = db.deleteIn(['indices', id]);
 
   return db;
 }
@@ -184,18 +143,14 @@ Database.prototype.hasEntry = function hasEntry(id) {
 Database.prototype.getEntry = function getEntry(id) {
   let db = this;
 
-  if (!db.entries.has(id))
-    return undefined
-
-
-  return (new FullEntry()).merge(db.entries.get(id), db.resources.get(id), db.indices.get(id))
+  return db.entries.get(id)
 }
 
 //add a resource to the given entry
 Database.prototype.addResource = function addResource(id, path) {
   let db = this;
 
-  db = db.updateIn(['resources', id, "resourcePaths"], paths=>paths.add(path));
+  db = db.updateIn(['entries', id, "resourcePaths"], paths=>paths.add(path));
 
   return db
 }
@@ -204,9 +159,7 @@ Database.prototype.addResource = function addResource(id, path) {
 Database.prototype.removeResource = function removeResource(id, path) {
   let db = this;
 
-  if (db.resources.has(id)) {
-    db = db.updateIn(['resources', id, "resourcePaths"], paths => paths.delete(path));
-  }
+  db = db.updateIn(['entries', id, "resourcePaths"], paths => paths.delete(path));
   return db;
 }
 
@@ -214,7 +167,7 @@ Database.prototype.removeResource = function removeResource(id, path) {
 Database.prototype.setBody = function setBody(id, body) {
   let db = this;
 
-  db = db.setIn(['indices', id, 'body'], body);
+  db = db.setIn(['entries', id, 'body'], body);
   return db;
 }
 
@@ -223,7 +176,7 @@ Database.prototype.setBody = function setBody(id, body) {
 Database.prototype.setTitle = function setTitle(id, title) {
   let db = this;
 
-  db = db.setIn(['indices', id, 'title'], title);
+  db = db.setIn(['entries', id, 'title'], title);
   return db;
 }
  
@@ -231,7 +184,7 @@ Database.prototype.setTitle = function setTitle(id, title) {
 Database.prototype.setAttribute = function setAttribute(id, key, values) {
   let db = this;
 
-  db = db.setIn(['indices', id, 'attributes', key], Immutable.OrderedSet(values));
+  db = db.setIn(['entries', id, 'attributes', key], Immutable.OrderedSet(values));
 
   return db;
 }
@@ -241,7 +194,7 @@ Database.prototype.setAttribute = function setAttribute(id, key, values) {
 Database.prototype.setAttributes = function setAttributes(id, attributes) {
   let db = this;
 
-  db = db.setIn(['indices', id, 'attributes'], Immutable.fromJS(attributes, (key, value) => {
+  db = db.setIn(['entries', id, 'attributes'], Immutable.fromJS(attributes, (key, value) => {
     switch (key) {
       case '':
         return value.toOrderedMap()
@@ -256,45 +209,46 @@ Database.prototype.setAttributes = function setAttributes(id, attributes) {
 Database.prototype.removeAttribute = function removeAttribute(id, key) {
   let db = this
 
-  db = db.deleteIn(['indices', id, 'attributes', key])
+  db = db.deleteIn(['entries', id, 'attributes', key])
 
   return db
 }
 
 //get all resources for an entry
 Database.prototype.getResources = function getResource(id) {
-  return this.getIn(['resources', id, 'resourcePaths'])
+  return this.getIn(['entries', id, 'resourcePaths'])
 }
 
 //get all values for an attribute
 Database.prototype.getAttribute = function getAttribute(id, key) {
-  if (!this.hasIn(['indices', id, 'attributes', key]))
+  if (!this.hasIn(['entries', id, 'attributes', key]))
     return undefined
-  return this.getIn(['indices', id, 'attributes', key])
+  return this.getIn(['entries', id, 'attributes', key])
 }
 
 Database.prototype.hasAttribute = function hasAttribute(id, key) {
-  return this.hasIn(['indices', id, 'attributes', key])
+  return this.hasIn(['entries', id, 'attributes', key])
 }
 
 //get all attributes that have been set for an entry
-Database.prototype.getAttributeKeys = function getAttributes(id) {
-  if (!this.hasIn(['indices', id, 'attributes']))
+Database.prototype.getAttributeKeys = function getAttributeKeys(id) {
+  if (!this.hasIn(['entries', id, 'attributes']))
     return Immutable.OrderedSet([])
 
-  return Immutable.OrderedSet(this.getIn(['indices', id, 'attributes']).keys())
+  let keys = this.getIn(['entries', id, 'attributes']).keys()
+  return Immutable.OrderedSet(keys)
 }
 
 //get all entries that have a particular value for an attribute
 Database.prototype.getEntriesForAttibute = function getEntriesForAttibute(key, value) {
-  let indices = this.indices.toSet().filter(index => index.attributes.has(key) && index.attributes.get(key).has(value))
+  let entries = this.entries.filter((entry) => entry.attributes.has(key) && entry.attributes.get(key).has(value))
 
-  return indices.map(index => index.id)
+  return entries.map(entry=>entry.id).toOrderedSet()
 }
 
 //get title for an entry
 Database.prototype.getTitle = function getTitle(id) {
-  let title = this.indices.get(id).title
+  let title = this.entries.get(id).title
   if (title == null)
     title = TitleTools.titleize(id)
 
@@ -303,7 +257,7 @@ Database.prototype.getTitle = function getTitle(id) {
 
 //get body for an entry
 Database.prototype.getBody = function getBody(id) {
-  return this.indices.get(id).body
+  return this.entries.get(id).body
 }
 
 //get all children for an entry
@@ -314,7 +268,7 @@ Database.prototype.getChildren = function getChildren(id) {
 //erase all index data for an entry
 Database.prototype.wipeIndex = function wipeIndex(id) {
   return this
-    .setIn(['indices', id, 'title'], null)
-    .setIn(['indices', id, 'body'], null)
-    .setIn(['indices', id, 'attributes'], Immutable.OrderedMap())
+    .setIn(['entries', id, 'title'], null)
+    .setIn(['entries', id, 'body'], null)
+    .setIn(['entries', id, 'attributes'], Immutable.OrderedMap())
 }

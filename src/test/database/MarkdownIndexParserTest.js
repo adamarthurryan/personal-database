@@ -18,6 +18,13 @@ describe ('MarkdownIndexParser', () => {
     expect(index.title).to.equal("Title")
     expect(index.body).to.equal("body\netc")
   })
+  it ('should extract titles without preceeding newline', () => {
+    let source = "# Title \nbody\netc"
+    let index = MarkdownIndexParser.parse(source)
+   
+    expect(index.title).to.equal("Title")
+    expect(index.body).to.equal("body\netc")
+  })
 
   it ('should not extract sub titles', () => {
     let source = "  \n ## Subtitle \nbody\netc"
@@ -32,6 +39,21 @@ describe ('MarkdownIndexParser', () => {
     let index = MarkdownIndexParser.parse(source)
 
     expect(index.body).to.equal('body\netc\n--- not an attribute block')
+    //expect(Immutable.Map({fire:['walker'], wunder:['kammer'], stranger:['danger']}).toArray()).to.equal(Immutable.Map({fire:['walker'], wunder:['kammer'], stranger:['danger']}).toArray())    
+    expect(index.attributes).to.deep.equal(Immutable.OrderedMap({
+      fire:Immutable.OrderedSet(['walker']), 
+      wunder:Immutable.OrderedSet(['kammer']), 
+      stranger:Immutable.OrderedSet(['danger'])
+    }))    
+    expect(index.attributes).to.have.all.keys('fire', 'wunder', 'stranger')
+  })
+
+  it ('should extract indexes containing only attribute blocks', () => {
+    let source =' - fire: walker\n+ wunder:kammer\n  *  stranger : danger'
+    let index = MarkdownIndexParser.parse(source)
+
+    expect(index.body).to.be.null
+    expect(index.title).to.be.null
     //expect(Immutable.Map({fire:['walker'], wunder:['kammer'], stranger:['danger']}).toArray()).to.equal(Immutable.Map({fire:['walker'], wunder:['kammer'], stranger:['danger']}).toArray())    
     expect(index.attributes).to.deep.equal(Immutable.OrderedMap({
       fire:Immutable.OrderedSet(['walker']), 

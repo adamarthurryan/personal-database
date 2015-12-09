@@ -5,8 +5,8 @@ import Attribute from './Attribute'
 import Immutable from 'immutable'
 
 
-var reTitle = /^\s*#\s+(.*)\n/
-var reAttrBlock = /(^|\n)---\n((\n|[ \t]*[-+*][ \t]*([^\s:]+)[ \t]*:[ \t]*(.*))*)$/
+var reTitle = /^\s*#\s+(.*)($|\n)/
+var reAttrBlock = /(((^|\n)---\n)|^)((\n|[ \t]*[-+*][ \t]*([^\s:]+)[ \t]*:[ \t]*(.*))*)$/
 var reAttrLine = /[ \t]*[-+*][ \t]*([^\s:]+)[ \t]*:[ \t]*(.*)$/gm
 var reAttrKeyValue = /[ \t]*[-+*][ \t]*([^\s:]+)[ \t]*:[ \t]*(.*)$/
 
@@ -32,7 +32,7 @@ export function parse(source) {
   let matchAttrBlock = source.match(reAttrBlock)
   if (matchAttrBlock) {
 
-    let attrLines = matchAttrBlock[2].match(reAttrLine)
+    let attrLines = matchAttrBlock[4].match(reAttrLine)
 
     let attrKeyValues = attrLines.map(attrLine => attrLine.match(reAttrKeyValue))
 
@@ -42,6 +42,8 @@ export function parse(source) {
     })
 
     source = source.replace(reAttrBlock, '')
+    if (source == '')
+      source = null
   }
 
   attributes = Immutable.OrderedMap(attributes)

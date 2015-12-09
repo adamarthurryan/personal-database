@@ -5,8 +5,6 @@ import ResourceThumb from './ResourceThumb'
 import ResourceLink from './ResourceLink'
 import * as PathTools from '../database/PathTools'
 
-import MasonryGrid from './MasonryGrid'
-
 
 import MarkdownIt from 'markdown-it'
 var md = MarkdownIt({linkify:true})
@@ -23,11 +21,10 @@ export default class Entry extends React.Component {
   }  
 
   render () {
-    const {entry, resources, index, title, body} = this.props
+    const {id, resourcePaths, title, body} = this.props.entry
     
-
-    var thumbResources = resources.filter(path => canThumbnail(path))
-    var nonThumbResources = resources.filter(path => ! canThumbnail(path))
+    var thumbResources = resourcePaths.filter(path => canThumbnail(path))
+    var nonThumbResources = resourcePaths.filter(path => ! canThumbnail(path))
 
     return (
       <div className="entry">

@@ -4,65 +4,102 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import * as PathTools from '../database/PathTools'
+import * as TitleTools from '../database/TitleTools'
 import { Link } from 'react-router' 
 
 import Entry from './Entry'
 import EntryThumb from './EntryThumb'
-
-import MasonryGrid from './MasonryGrid'
+import EntriesList from './EntriesList'
+import EntriesGrid from './EntriesGrid'
+import EntriesOutline from './EntriesOutline'
 
 import Breadcrumbs from './Breadcrumbs';
-
+  
 class Main extends React.Component {
   constructor() {
-    super();
+    super()
   }
 
   render () {
     // Injected by connect() call:
     const { dispatch, db } = this.props
-    
+     
     //lets figure out what the path is
     
     //decode location url
-    let path = decodeURI(this.props.location.pathname)
-    path = PathTools.normalize(path)
+    let id = decodeURI(this.props.location.pathname)
+    id = PathTools.normalize(id)
 
-    console.log('Main path:', path)
+    console.log('Main path:', id)
     //console.log('Main children: ', db.getChildren(path))
 
-    let entry = 
-              <div className="entry" key={path}>
-                <h1>{db.getTitle(path)}</h1>
-                <Entry 
-                  entry={path} 
-                  resources={db.getResources(path)} 
-                  body={db.getBody(path)} 
-                />
-              </div>
-    
-    let entries = db.getChildren(path).map( entryId => {
-      return <div className='u-pull-left'><EntryThumb 
-              entryId={entryId} 
-              resources={db.getResources(entryId)}
-              body={db.getBody(entryId)}
-              title={db.getTitle(entryId)}
-              size="300x300"
-              /></div>
-      //return <li key={entryId}><Link to={'/'+(entryId)}>{db.getTitle(entryId) }</Link></li> 
-    });
+    let displayValues = db.getAttribute(id, "display")
+    let displayMode = displayValues? displayValues.first(): null;
+
+    let entry = db.getEntry(id)
+    if (! entry.title)
+      entry = entry.set('title', TitleTools.titleize(id))
+
+
+
+    //sort the entries by title
+
+    let entriesView = null
+    let entries = null
+
+    switch (displayMode) {
+      case "grid":
+        entries = collectChildren(db, id, 1)
+        entries = db.getChildren(id).map(id => db.getEntry(id))
+        entries = entries.map(entry => (entry.title? entry: entry.set('title', TitleTools.titleize(entry.id))))
+        entriesView = <EntriesGrid key="gridview" entries={entries} size="300x300"/>
+        break
+
+      case "outline":
+        entries = collectChildren(db, id, 4)
+        entriesView = <EntriesOutline key="outlineview" entries={entries} parentId={id} depth={4}/>
+        break
+
+      case "list": default:
+        entries = collectChildren(db, id, 1)
+        entries = db.getChildren(id).map(id => db.getEntry(id))
+        entries = entries.map(entry => (entry.title? entry: entry.set('title', TitleTools.titleize(entry.id))))
+        entriesView = <EntriesList key="listview" entries={entries}/>
+        break
+    }
 
     return (
       <div className='container'>
-        <Breadcrumbs path={path}/>
-        {entry}
-        <div className="u-cf">
-          {entries}
+        <Breadcrumbs path={id}/>
+
+        <div className="entry" key={id}>
+          <h1>{entry.title}</h1>
+          <Entry entry={entry}/>
+          {entriesView}
         </div>
       </div>
     );
   }
+//        {entriesView}
 
+}
+
+
+// collect all the children for a specified id
+// set their titles to a titleized version of the title if necesary
+function collectChildren(db, id, depth) {
+  if (depth < 1)
+    return []
+
+  let children = db.getChildren(id)
+
+  let entries = children.reduce( (entries, childId) => {
+    let child = db.getEntry(childId)
+    child = child.title ? child : child.set('title', TitleTools.titleize(child.id))
+    return entries.concat([child], collectChildren(db, childId, depth-1))
+  }, [])
+
+  return entries
 }
 
 // Which props do we want to inject, given the global state?

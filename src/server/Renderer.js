@@ -16,35 +16,41 @@ export default class Renderer {
     // Send the rendered page back to the client
     match({ routes, location: req.url }, (error, redirectLocation, renderProps) => {
       if (error) {
-        res.status(500).send(error.message)
+        res.status(500).send(renderError('Routing Error', error.message))
       } else if (redirectLocation) {
         res.redirect(302, redirectLocation.pathname + redirectLocation.search)
       } else if (renderProps) {
         // Render the component to a string
-        const html = renderToString(
-          <Provider store={store}>
-            <RoutingContext {...renderProps} />    
-          </Provider>
-        )
+        try {
+          const html = renderToString(
+            <Provider store={store}>
+              <RoutingContext {...renderProps} />    
+            </Provider>
+          )
 
-        // Grab the initial state from our Redux store
-        const initialState = store.getState()
+          // Grab the initial state from our Redux store
+          const initialState = store.getState()
+          // and send
+          res.status(200).send(renderFullPage(html, initialState))
+        }
+        catch(ex) {
+          res.status(500).send(renderError('Render Exception', ex.message, ex))
+        }
 
-        res.status(200).send(renderFullPage(html, initialState))
       } else {
-        res.status(404).send('Not found')
+        res.status(404).send(renderError('Not found', ''))
       }
     })
 
   }
 }
 
-function renderFullPage(html, initialState) {
+function renderError(title, message, exception) {
     return `
       <!doctype html>
       <html>
         <head>
-          <title>Redux Universal Example</title>
+          <title>Personal Database</title>
           
           <!-- Mobile-specific -->
           <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -60,7 +66,42 @@ function renderFullPage(html, initialState) {
           <!--That I even considered this! <script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/3.3.2/masonry.pkgd.min.js"></script>-->
 
           <!-- Favicon -->
-          <link rel="shortcut icon" href="/assets/favicon.png">
+          <link rel="shortcut icon" href="/assets/favicon.ico">
+
+        </head>
+        <body>
+          <div id="error" class="container">
+            <h1>${title}</h1>
+            <h4>${message}</h2>
+            <p><pre><code>${exception? exception.stack: ""}</code></pre></p>
+          </div>
+        </body>
+      </html>
+      `
+}
+
+function renderFullPage(html, initialState) {
+    return `
+      <!doctype html>
+      <html>
+        <head>
+          <title>Personal Database</title>
+          
+          <!-- Mobile-specific -->
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+
+          <!-- Font -->
+          <link href='//fonts.googleapis.com/css?family=Raleway:400,300,600' rel='stylesheet' type='text/css'>
+
+          <!-- CSS -->
+          <link href="/assets/lib/normalize.css" rel="stylesheet">
+          <link href="/assets/lib/skeleton.css" rel="stylesheet">
+
+          <!-- Masonry -->
+          <!--That I even considered this! <script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/3.3.2/masonry.pkgd.min.js"></script>-->
+
+          <!-- Favicon -->
+          <link rel="shortcut icon" href="/assets/favicon.ico">
 
         </head>
         <body>

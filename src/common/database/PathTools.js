@@ -1,3 +1,4 @@
+//!!! oh my goodness, the root path should be / and paths should be normalized to start with /
 export const ROOT = "~"
 
 export function normalize(path) {

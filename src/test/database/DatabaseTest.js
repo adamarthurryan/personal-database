@@ -95,14 +95,14 @@ describe('Database', () => {
     db = db.addEntry('a/c');
 
     expect(db.indices.get('a').title).to.equal('a title');
-    expect(db.resources.get('a').paths.has('a/test.jpg')).to.be.true;
+    expect(db.resources.get('a').resourcePaths.has('a/test.jpg')).to.be.true;
   })
 
   it('should add resources to the appropriate entry', () => {
     db = db.addEntry('a/b');
     db = db.addResource('a/b', 'a/b/test.jpg');
-    expect(db.resources.get('a/b').paths.has('a/b/test.jpg')).to.be.true;
-    expect(db.resources.get('a/b').paths.size).to.equal(1);
+    expect(db.resources.get('a/b').resourcePaths.has('a/b/test.jpg')).to.be.true;
+    expect(db.resources.get('a/b').resourcePaths.size).to.equal(1);
   })
 
   it('should delete resources and index when entry is deleted', () => {
@@ -128,7 +128,7 @@ describe('Database', () => {
     db = db.addResource('a', 'a/b/test.jpg');
     db = db.removeResource('a', 'a/b/test.jpg');
 
-    expect(db.resources.get('a').paths.size).to.equal(0);
+    expect(db.resources.get('a').resourcePaths.size).to.equal(0);
   });
 
   it('should allow setting index information', () => {
@@ -268,7 +268,17 @@ describe('Database', () => {
       .setAttribute('a/c', 'thekey', ['thevalue', 'anothervalue'])
 
     expect(db).to.equal(db2)
+  })
 
+  it('should return a complete entry object when requested', () => {
+    db = db.addEntry('a/b')
+      .addResource('a/b', 'theresource')
+      .setTitle('a/b', 'thetitle')
+      .setBody('a/b', 'thebody')
+      .setAttribute('a/b', 'thekey', ['thevalue'])
 
+    let entry = db.getEntry('a/b')
+    expect(entry).to.include.keys(['id', 'title', 'body', 'attributes', 'resourcePaths', 'parentId', 'childIds'])
+    expect(entry.isSuperset(Immutable.OrderedMap({id:'a/b', title:'thetitle', resourcePaths:Immutable.OrderedSet(['theresource']), parentId:'a', childIds:Immutable.OrderedSet([])}))).to.be.true
   })
 });

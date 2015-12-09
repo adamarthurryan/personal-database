@@ -1,10 +1,10 @@
 import Immutable from 'immutable'
 
 var Index = Immutable.Record({
-  entryId: null,
+  id: null,
   title: null,
   body: null,
-  attributes: Immutable.Map() //of value Sets
+  attributes: Immutable.OrderedMap() //of value Sets
 })
 
 export default Index

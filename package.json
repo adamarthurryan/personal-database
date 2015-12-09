@@ -6,7 +6,7 @@
   "main": "",
   "scripts": {
     "clean": "rimraf dist/*",
-    "copy": "copyfiles -f ./bower_components/skeleton/**/*.css ./dist/assets/lib && copyfiles -f ./bower_components/skeleton/images/*.png ./dist/assets",
+    "copy": "copyfiles -f ./bower_components/skeleton/**/*.css ./dist/assets/lib && copyfiles -f ./assets/favicon.ico ./dist/assets",
     "dist": "npm run copy & webpack --env=dist",
     "lint": "eslint ./src",
     "posttest": "npm run lint",

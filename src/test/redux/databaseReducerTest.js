@@ -89,6 +89,16 @@ describe('databaseReducer', () => {
     expect(db.getAttribute('a/b', 'thekey')).to.equal(Immutable.OrderedSet([1,2,3]))
   })
 
+  it('should set multiple attributes', () => {
+    let actions = [
+      A.addEntry('a/b'), 
+      A.updateAttributes('a/b', {'thekey': [1,2,3], 'anotherkey': ['one', 'two', 'three']})
+    ]
+    let db = reduceAll(actions)
+
+    expect(db.getAttribute('a/b', 'thekey')).to.equal(Immutable.OrderedSet([1,2,3]))
+  })
+
   it('should update attributes', () => {
     let actions = [
       A.addEntry('a/b'), 

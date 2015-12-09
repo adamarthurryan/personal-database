@@ -33,10 +33,10 @@ describe ('MarkdownIndexParser', () => {
 
     expect(index.body).to.equal('body\netc\n--- not an attribute block')
     //expect(Immutable.Map({fire:['walker'], wunder:['kammer'], stranger:['danger']}).toArray()).to.equal(Immutable.Map({fire:['walker'], wunder:['kammer'], stranger:['danger']}).toArray())    
-    expect(index.attributes).to.deep.equal(Immutable.Map({
-      fire:Immutable.Set(['walker']), 
-      wunder:Immutable.Set(['kammer']), 
-      stranger:Immutable.Set(['danger'])
+    expect(index.attributes).to.deep.equal(Immutable.OrderedMap({
+      fire:Immutable.OrderedSet(['walker']), 
+      wunder:Immutable.OrderedSet(['kammer']), 
+      stranger:Immutable.OrderedSet(['danger'])
     }))    
     expect(index.attributes).to.have.all.keys('fire', 'wunder', 'stranger')
   })

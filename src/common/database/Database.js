@@ -5,8 +5,14 @@ import * as TitleTools from './TitleTools'
 
 import Index from './Index'
 
-//wu.js
-//immutable.js ?
+//!!! this interface should be simplified and refactored
+  //expose entry/resource/index objects instead?
+
+//!!! Immutable objects should not be exposed out of the database 
+  // - simple JS objects are better
+  // - expect JS at get/set interfaces
+
+//??? should entry/resource/index be merged into a single object? Why are they separate?
 
 var Database = Immutable.Record({
   entries: Immutable.OrderedMap(),
@@ -17,6 +23,16 @@ var Database = Immutable.Record({
 export default Database;
 
 
+var FullEntry = Immutable.Record({
+  id: null,
+  childIds: Immutable.OrderedSet(),
+  parentId: null,
+  resourcePaths: Immutable.OrderedSet(),
+  title: null,
+  body: null,
+  attributes: Immutable.OrderedMap()
+});
+
 var Entry = Immutable.Record({
   id: null, 
   childIds: Immutable.OrderedSet(), //of strings
@@ -24,11 +40,9 @@ var Entry = Immutable.Record({
 }); 
 
 var Resource = Immutable.Record({
-  entryId: null,
-  paths: Immutable.OrderedSet() //of strings
+  id: null,
+  resourcePaths: Immutable.OrderedSet() //of strings
 });
- 
-
 
 /* collections give a reverse lookup of the entries for each key
    this is an optimization which might be implemented later
@@ -40,7 +54,7 @@ var Collections = Immutable.Record({
 
 var Value = Immutable.Record({
   name: null,
-  entryIds: Immutable.OrderedSet()
+  ids: Immutable.OrderedSet()
 });
 */
 
@@ -61,7 +75,7 @@ Database.fromJS = function fromJS(object) {
       switch (key) {
         case '':
           return value.toOrderedMap()
-        case 'paths':
+        case 'resourcePaths':
           return value.toOrderedMap()
         default:
           return new Resource(value)
@@ -118,8 +132,8 @@ Database.prototype.addEntry = function addEntry(id) {
     db = db.setIn(['entries', id], new Entry({id}));
   }
 
-  db = db.setIn(['resources', id], new Resource({entryId:id}));
-  db = db.setIn(['indices', id], new Index({entryId:id}));
+  db = db.setIn(['resources', id], new Resource({id:id}));
+  db = db.setIn(['indices', id], new Index({id:id}));
 
   return db;
 }
@@ -158,115 +172,149 @@ Database.prototype.removeEntry = function removeEntry(id) {
   return db;
 }
 
-//add a resource to the given entry
-Database.prototype.addResource = function addResource(entryId, path) {
+//return true if the entry exists
+Database.prototype.hasEntry = function hasEntry(id) {
   let db = this;
 
-  db = db.updateIn(['resources', entryId, "paths"], paths=>paths.add(path));
+  return db.entries.has(id);
+}
+
+//create a new object with all the fields of the given entry: its resource and index values as well
+// ??? this might be better implemented with something like rackt/reselect
+Database.prototype.getEntry = function getEntry(id) {
+  let db = this;
+
+  if (!db.entries.has(id))
+    return undefined
+
+
+  return (new FullEntry()).merge(db.entries.get(id), db.resources.get(id), db.indices.get(id))
+}
+
+//add a resource to the given entry
+Database.prototype.addResource = function addResource(id, path) {
+  let db = this;
+
+  db = db.updateIn(['resources', id, "resourcePaths"], paths=>paths.add(path));
 
   return db
 }
 
 //remove a resource from the given entry
-Database.prototype.removeResource = function removeResource(entryId, path) {
+Database.prototype.removeResource = function removeResource(id, path) {
   let db = this;
 
-  if (db.resources.has(entryId)) {
-    db = db.updateIn(['resources', entryId, "paths"], paths => paths.delete(path));
+  if (db.resources.has(id)) {
+    db = db.updateIn(['resources', id, "resourcePaths"], paths => paths.delete(path));
   }
   return db;
 }
 
 //set the body of the entry
-Database.prototype.setBody = function setBody(entryId, body) {
+Database.prototype.setBody = function setBody(id, body) {
   let db = this;
 
-  db = db.setIn(['indices', entryId, 'body'], body);
+  db = db.setIn(['indices', id, 'body'], body);
   return db;
 }
 
 
 //set the title of the entry
-Database.prototype.setTitle = function setTitle(entryId, title) {
+Database.prototype.setTitle = function setTitle(id, title) {
   let db = this;
 
-  db = db.setIn(['indices', entryId, 'title'], title);
+  db = db.setIn(['indices', id, 'title'], title);
   return db;
 }
-
+ 
 //set the values for an attribute of the entry
-Database.prototype.setAttribute = function setAttribute(entryId, key, values) {
+Database.prototype.setAttribute = function setAttribute(id, key, values) {
   let db = this;
 
-  db = db.setIn(['indices', entryId, 'attributes', key], Immutable.OrderedSet(values));
+  db = db.setIn(['indices', id, 'attributes', key], Immutable.OrderedSet(values));
 
   return db;
 }
 
 //set the attributes map of the entry
 //??? should this be controlled for shape?
-Database.prototype.setAttributes = function setAttributes(entryId, attributes) {
+Database.prototype.setAttributes = function setAttributes(id, attributes) {
   let db = this;
 
-  db = db.setIn(['indices', entryId, 'attributes'], attributes);
-
+  db = db.setIn(['indices', id, 'attributes'], Immutable.fromJS(attributes, (key, value) => {
+    switch (key) {
+      case '':
+        return value.toOrderedMap()
+      default:
+        return value.toOrderedSet(value)
+    }
+  }));
   return db;
 }
 
 //remove an attribute from the entry
-Database.prototype.removeAttribute = function removeAttribute(entryId, key) {
-  let db = this;
+Database.prototype.removeAttribute = function removeAttribute(id, key) {
+  let db = this
 
-  db = db.deleteIn(['indices', entryId, 'attributes', key]);
+  db = db.deleteIn(['indices', id, 'attributes', key])
 
-  return db;
+  return db
 }
 
 //get all resources for an entry
-Database.prototype.getResources = function getResource(entryId) {
-  return this.getIn(['resources', entryId, 'paths']);
+Database.prototype.getResources = function getResource(id) {
+  return this.getIn(['resources', id, 'resourcePaths'])
 }
 
 //get all values for an attribute
-Database.prototype.getAttribute = function getAttribute(entryId, key) {
-  return this.getIn(['indices', entryId, 'attributes', key]);
+Database.prototype.getAttribute = function getAttribute(id, key) {
+  if (!this.hasIn(['indices', id, 'attributes', key]))
+    return undefined
+  return this.getIn(['indices', id, 'attributes', key])
+}
+
+Database.prototype.hasAttribute = function hasAttribute(id, key) {
+  return this.hasIn(['indices', id, 'attributes', key])
 }
 
 //get all attributes that have been set for an entry
-Database.prototype.getAttributeKeys = function getAttributes(entryId) {
-  return Immutable.OrderedSet(this.getIn(['indices', entryId, 'attributes']).keys())
+Database.prototype.getAttributeKeys = function getAttributes(id) {
+  if (!this.hasIn(['indices', id, 'attributes']))
+    return Immutable.OrderedSet([])
+
+  return Immutable.OrderedSet(this.getIn(['indices', id, 'attributes']).keys())
 }
 
 //get all entries that have a particular value for an attribute
 Database.prototype.getEntriesForAttibute = function getEntriesForAttibute(key, value) {
-  let indices = this.indices.toSet().filter(index => index.attributes.has(key) && index.attributes.get(key).has(value));
+  let indices = this.indices.toSet().filter(index => index.attributes.has(key) && index.attributes.get(key).has(value))
 
-  return indices.map(index => index.entryId);
+  return indices.map(index => index.id)
 }
 
 //get title for an entry
-Database.prototype.getTitle = function getTitle(entryId) {
-  let title = this.indices.get(entryId).title;
+Database.prototype.getTitle = function getTitle(id) {
+  let title = this.indices.get(id).title
   if (title == null)
-    title = TitleTools.titleize(entryId);
+    title = TitleTools.titleize(id)
 
-  return title;
+  return title
 }
 
 //get body for an entry
-Database.prototype.getBody = function getBody(entryId) {
-  return this.indices.get(entryId).body;
+Database.prototype.getBody = function getBody(id) {
+  return this.indices.get(id).body
 }
 
 //get all children for an entry
-Database.prototype.getChildren = function getChildren(entryId) {
-  return this.entries.get(entryId).childIds;
+Database.prototype.getChildren = function getChildren(id) {
+  return this.entries.get(id).childIds
 }
 
 //erase all index data for an entry
-Database.prototype.wipeIndex = function wipeIndex(entryId) {
+Database.prototype.wipeIndex = function wipeIndex(id) {
   return this
-    .setIn(['indices', entryId, 'title'], null)
-    .setIn(['indices', entryId, 'body'], null)
-    .setIn(['indices', entryId, 'attributes'], Immutable.OrderedMap())
+    .setIn(['indices', id, 'title'], null)
+    .setIn(['indices', id, 'body'], null)
+    .setIn(['indices', id, 'attributes'], Immutable.OrderedMap())
 }

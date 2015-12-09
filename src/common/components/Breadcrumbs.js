@@ -16,7 +16,7 @@ export default class Breadcrumbs extends React.Component {
 
     var partComps = parts.map((pathPart, index) => {
       var path = parts.slice(0, index+1).join('/');
-      return <Link key={index+1} to={"/"+path}>{pathPart}</Link>
+      return <Link key={"link-"+(index+1)} to={"/"+path}>{pathPart}</Link>
     } );
 
     partComps.unshift(<Link key={0} to={"/"}>root</Link>)

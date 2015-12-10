@@ -4,45 +4,18 @@ import * as PathTools from './PathTools'
 import * as TitleTools from './TitleTools'
 
 import Index from './Index'
+import Entry from './Entry'
 
 //!!! this interface should be simplified and refactored
-  //expose entry/resource/index objects instead?
 
-//!!! Immutable objects should not be exposed out of the database 
-  // - simple JS objects are better
-  // - expect JS at get/set interfaces
+// Immutable objects are sometimes exposed out of the database
+// !!! it should be possible to set attributes, etc with simple js objects
 
-//??? should entry/resource/index be merged into a single object? Why are they separate?
 
 var Database = Immutable.Record({
   entries: Immutable.Map(), //of Entries
 });
 export default Database;
-
-
-var Entry = Immutable.Record({
-  id: null,
-  childIds: Immutable.Set(),
-  parentId: null,
-  resourcePaths: Immutable.Set(),
-  title: null,
-  body: null,
-  attributes: Immutable.Map()
-});
-
-/* collections give a reverse lookup of the entries for each attribute key
-   this is an optimization which might be implemented later
-
-var Collections = Immutable.Record({
-  key: null,
-  values: Immutable.Map() //of Value records
-})
-
-var Value = Immutable.Record({
-  name: null,
-  ids: Immutable.Set()
-});
-*/
 
 
 Database.fromJS = function fromJS(object) {
@@ -53,14 +26,12 @@ Database.fromJS = function fromJS(object) {
       switch (key) {
         case '':
           return value.toMap()
-        //resourcePaths and childIds should be non-keyed
-        //case 'resourcePaths': case 'childIds'
-        //  return value.toSet()
         case 'attributes': 
           return value.toMap()
         default:
           return new Entry(value)
       }      
+    //resourcePaths and childIds should be non-keyed
     else
       return value.toSet()
   })
@@ -181,6 +152,7 @@ Database.prototype.setTitle = function setTitle(id, title) {
 }
  
 //set the values for an attribute of the entry
+//!!! should accept either single value or array instance - maybe two different functions
 Database.prototype.setAttribute = function setAttribute(id, key, values) {
   let db = this;
 
@@ -191,6 +163,7 @@ Database.prototype.setAttribute = function setAttribute(id, key, values) {
 
 //set the attributes map of the entry
 //??? should this be controlled for shape?
+//!!! should accept either JS or Immutable instances
 Database.prototype.setAttributes = function setAttributes(id, attributes) {
   let db = this;
 

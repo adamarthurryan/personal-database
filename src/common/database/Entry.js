@@ -1,3 +1,5 @@
+import Immutable from 'immutable'
+
 var Entry = Immutable.Record({
   id: null,
   childIds: Immutable.Set(),
@@ -7,3 +9,5 @@ var Entry = Immutable.Record({
   body: null,
   attributes: Immutable.Map()
 });
+
+export default Entry

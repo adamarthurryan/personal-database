@@ -4,9 +4,9 @@ import ReactDOM from 'react-dom'
 import { createStore } from 'redux'
 import { Provider } from 'react-redux'
 import Main from 'common/components/Main'
-import reducer from 'common/redux/databaseReducer'
-import * as Actions from 'common/redux/DatabaseActions'
 import Database from 'common/database/Database'
+import View from 'common/view/View'
+import reducer from 'common/redux/Reducer'
 
 import SocketIo from 'socket.io-client'
 
@@ -15,7 +15,9 @@ import  createBrowserHistory  from 'history/lib/createBrowserHistory'
 import routes from 'common/routes'
 
 // Grab the state from a global injected into server-generated HTML
-const initialState = Database.fromJS(window.__INITIAL_STATE__)
+const initialDb = Database.fromJS(window.__INITIAL_STATE__.database)
+const initialView = View.fromJS(window.__INITIAL_STATE__.view)
+const initialState = {database:initialDb, view:initialView}
 
 // Create Redux store with initial state
 const store = createStore(reducer, initialState)

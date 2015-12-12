@@ -14,35 +14,50 @@ export default class EntryThumb extends React.Component {
   }   
 
   render () {
-    const {id, resourcePaths, title, body} = this.props.entry;
-    const size = this.props.size
+    const {entryId, db, size} = this.props
     
-
-    let thumbResource = resourcePaths.find(path => canThumbnail(path));
-
-
+    let thumbResource = _findThumbResource(db, entryId)
 
     if (thumbResource)
-      return <div className="entry entry-thumb" style={{width:300, height:300, position: "relative"}} key={id}>
-          <Link to={"/"+id}>
+      return <div className="entry entry-thumb" style={{width:300, height:300, position: "relative"}} key={entryId}>
+          <Link to={"/"+entryId}>
             <ResourceThumb resource={thumbResource} size={size}/>
           </Link>
           <h4 style={{width:"100%", position: "absolute", backgroundColor:"rgba(255,255,255,0.5)", top: "0px"}}>
-            <Link style={{fontWeight: "bold", color: "black", textDecoration: "none"}} to={'/'+id}>{title}</Link>
+            <Link style={{fontWeight: "bold", color: "black", textDecoration: "none"}} to={'/'+entryId}>{db.getTitle(entryId)}</Link>
           </h4>
         </div>
     else
-      return <div className="entry entry-thumb" style={{width:300, height:300, position: "relative"}} key={id}>
-          <p>{body}</p>
+      return <div className="entry entry-thumb" style={{width:300, height:300, position: "relative"}} key={entryId}>
+          <p>{db.getBody(entryId)}</p>
           <h4 style={{width:"100%",position: "absolute", backgroundColor:"rgba(255,255,255,0.5)", top: "0px"}}>
-            <Link style={{fontWeight: "bold", color: "black", textDecoration: "none"}} to={'/'+id}>{title}</Link>
+            <Link style={{fontWeight: "bold", color: "black", textDecoration: "none"}} to={'/'+entryId}>{db.getTitle(entryId)}</Link>
           </h4>
         </div>
   }   
 }
 
 
-function canThumbnail(path) {
+function _findThumbResource (db, entryId) {
+  let resourcePaths = db.getResources(entryId)
+  let thumbResource = resourcePaths.find(path => _canThumbnail(path));
+
+  if (thumbResource)
+    return thumbResource
+  
+  if (!db.hasChildren(entryId))
+    return undefined
+
+  return db.getChildren(entryId).reduce((result, childId) => {
+    if (result)
+      return result
+
+    return _findThumbResource(db, childId)
+  }, undefined)
+
+
+}
+function _canThumbnail(path) {
   let ext = PathTools.getExtension(path)
   ext = ext.toLowerCase()
   return (ext == '.jpg' || ext == '.gif' || ext == '.png' || ext=='.jpeg' )

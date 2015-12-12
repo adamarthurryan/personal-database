@@ -24,22 +24,21 @@ function h (title, depth) {
 export default class EntriesOutline extends React.Component {
 
   render () {
-    const {entries, parentId, depth} = this.props
+    const {entryIds, db , depth} = this.props
+    //!!! should really look up how to specify props in react
     const currentDepth = this.props.currentDepth ? this.props.currentDepth : 1
     
-
-    console.log(this.props)
     return <div>
-      {entries.filter(entry => entry.parentId == parentId).map( entry => {
+      {entryIds.map( entryId => {
         return (
-          <div key={entry.id}>
-            {h(entry.title, currentDepth)}
-            <p>{entry.body}</p>
+          <div key={entryId}>
+            {h(db.getTitle(entryId), currentDepth)}
+            <p>{db.getBody(entryId)}</p>
 
             {(depth>1 ? <EntriesOutline 
-              entries={entries.filter(childEntry => PathTools.isDescendantOf(childEntry.id, entry.id))} 
+              db={db}
               depth={depth-1}
-              parentId={entry.id}
+              entryIds={db.getChildren(entryId)}
               currentDepth={currentDepth+1}
               />
               : null)}

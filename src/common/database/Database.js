@@ -13,12 +13,14 @@ import Entry from './Entry'
 
 
 var Database = Immutable.Record({
+  root: PathTools.ROOT,
   entries: Immutable.Map(), //of Entries
 });
 export default Database;
 
 
 Database.fromJS = function fromJS(object) {
+
 
   let entries = Immutable.fromJS(object.entries, (key, value) => {
     let isKeyed = Immutable.Iterable.isKeyed(value);
@@ -35,6 +37,7 @@ Database.fromJS = function fromJS(object) {
     else
       return value.toSet()
   })
+
 
   return new Database({entries:entries.toMap()})
 
@@ -238,10 +241,37 @@ Database.prototype.getChildren = function getChildren(id) {
   return this.entries.get(id).childIds
 }
 
+//return whether the entry has children
+Database.prototype.hasChildren = function hasChildren(id) {
+  return ! this.entries.get(id).childIds.isEmpty()
+}
+
 //erase all index data for an entry
 Database.prototype.wipeIndex = function wipeIndex(id) {
   return this
     .setIn(['entries', id, 'title'], null)
     .setIn(['entries', id, 'body'], null)
     .setIn(['entries', id, 'attributes'], Immutable.Map())
+}
+
+Database.prototype.getSubtree = function getSubtree(id) {
+  let entries = _collectDescendants(this, id)
+  entries.push(this.entries.get(id))
+  let kvpairs = entries.map(entry => [entry.id, entry])
+  return new Database({root:id, entries:Immutable.Map(kvpairs)})
+}
+
+// recursively collect all the descendants for a specified id
+function _collectDescendants(db, id, depth=-1) {
+  if (depth == 0)
+    return []
+
+  let children = db.getChildren(id)
+
+  let entries = children.reduce( (entries, childId) => {
+    let child = db.entries.get(childId)
+    return entries.concat([child], _collectDescendants(db, childId, depth-1))
+  }, [])
+
+  return entries
 }

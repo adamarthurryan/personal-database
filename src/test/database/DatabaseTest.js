@@ -273,4 +273,21 @@ describe('Database', () => {
     expect(entry).to.include.keys(['id', 'title', 'body', 'attributes', 'resourcePaths', 'parentId', 'childIds'])
     expect(entry.isSuperset(Immutable.Map({id:'a/b', title:'thetitle', resourcePaths:Immutable.Set(['theresource']), parentId:'a', childIds:Immutable.Set([])}))).to.be.true
   })
+
+  it('should return a subtree database rooted at a specific child when requested', () => {
+    db = db.addEntry('a/b/c')
+          .addEntry('a/b/d')
+          .addEntry('a/b/e/f')
+
+    let subdb = db.getSubtree('a/b')
+    expect(subdb.root).to.be.equal('a/b')
+    expect(subdb.entries).to.have.all.keys(Immutable.Set(['a/b/c', 'a/b/d', 'a/b/e', 'a/b/e/f', 'a/b']))
+  })
+
+  it('should test for entries that have or do not have children', () => {
+    db = db.addEntry('a/b/c')
+
+    expect(db.hasChildren('a/b')).to.be.true
+    expect(db.hasChildren('a/b/c')).to.be.false
+  })
 });

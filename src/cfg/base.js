@@ -39,12 +39,12 @@ module.exports = {
   resolve: {
     extensions: ['', '.js', '.jsx'],
     alias: {
+      'client/cfg': path.join(srcPath,'client','cfg', process.env.REACT_WEBPACK_ENV),
       cfg: path.join(srcPath,'cfg'),
       client: path.join(srcPath,'client'),
       common: path.join(srcPath,'common'),
       server: path.join(srcPath,'server'),
       test: path.join(srcPath,'test'),
-      //'client/config': path.join(srcPath,'config', process.env.REACT_WEBPACK_ENV)
     }
   },
   module: {

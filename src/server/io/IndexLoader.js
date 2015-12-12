@@ -1,7 +1,6 @@
 "use strict";
 
 import Index from '../../common/database/Index'
-import Attribute from '../../common/database/Attribute'
 import * as Parser from '../../common/database/MarkdownIndexParser'
 import FS from 'fs'
 import Path from 'path'

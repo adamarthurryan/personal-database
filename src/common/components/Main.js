@@ -7,13 +7,17 @@ import * as PathTools from '../database/PathTools'
 import * as TitleTools from '../database/TitleTools'
 import { Link } from 'react-router' 
 
+import ViewOptions from '../view/ViewOptions'
+import * as ViewActions from '../redux/ViewActions'
+
 import Entry from './Entry'
 import EntryThumb from './EntryThumb'
 import EntriesList from './EntriesList'
 import EntriesGrid from './EntriesGrid'
 import EntriesOutline from './EntriesOutline'
 
-import Breadcrumbs from './Breadcrumbs';
+import DisplaySelector from './DisplaySelector'
+import Breadcrumbs from './Breadcrumbs'
   
 class Main extends React.Component {
   constructor() {
@@ -22,7 +26,7 @@ class Main extends React.Component {
 
   render () {
     // Injected by connect() call:
-    const { dispatch, db } = this.props
+    const { dispatch, db, view } = this.props
      
     //lets figure out what the path is
     
@@ -33,8 +37,9 @@ class Main extends React.Component {
     console.log('Main path:', id)
     //console.log('Main children: ', db.getChildren(path))
 
-    let displayValues = db.getAttribute(id, "display")
-    let displayMode = displayValues? displayValues.first(): null;
+    let displayMode = view.getDisplay(id)
+
+    console.log('Display:', displayMode)
 
     let entry = db.getEntry(id)
     if (! entry.title)
@@ -43,34 +48,34 @@ class Main extends React.Component {
 
 
     //sort the entries by title
+    //we don't really need to do this subtree bit 
+    // - the idea is that it just protects sub components from having to re-render if one part of the db changes
+    // - does that even work?
 
+    // !!! in order for this optimization to work, we need to implement something like PureRenderMixin for the components
+    // !!! also the components would need to themselves use subtrees for their children
+    let subtreeDb = db.getSubtree(id)
     let entriesView = null
-    let entries = null
-
+    
     switch (displayMode) {
       case "grid":
-        entries = collectChildren(db, id, 1)
-        entries = db.getChildren(id).map(id => db.getEntry(id))
-        entries = entries.map(entry => (entry.title? entry: entry.set('title', TitleTools.titleize(entry.id))))
-        entriesView = <EntriesGrid key="gridview" entries={entries} size="300x300"/>
+        //!!! we should give the grid a whole subtree of children so that it can search deeper for thumbnail images
+        entriesView = <EntriesGrid key="gridview" db={subtreeDb}  entryIds={entry.childIds} size="300x300"/>
         break
 
       case "outline":
-        entries = collectChildren(db, id, 4)
-        entriesView = <EntriesOutline key="outlineview" entries={entries} parentId={id} depth={4}/>
+        entriesView = <EntriesOutline key="outlineview" db={subtreeDb} entryIds={entry.childIds} depth={4}/>
         break
 
       case "list": default:
-        entries = collectChildren(db, id, 1)
-        entries = db.getChildren(id).map(id => db.getEntry(id))
-        entries = entries.map(entry => (entry.title? entry: entry.set('title', TitleTools.titleize(entry.id))))
-        entriesView = <EntriesList key="listview" entries={entries}/>
+        entriesView = <EntriesList key="listview" db={subtreeDb}  entryIds={entry.childIds}/>
         break
     }
 
     return (
       <div className='container'>
         <Breadcrumbs path={id}/>
+        <DisplaySelector entryId={id} currentDisplay={displayMode} onSelect={( display) => dispatch(ViewActions.updateDisplay(id, display)) }/>
 
         <div className="entry" key={id}>
           <h1>{entry.title}</h1>
@@ -80,32 +85,20 @@ class Main extends React.Component {
       </div>
     );
   }
-//        {entriesView}
+
 
 }
 
 
-// collect all the children for a specified id
-// set their titles to a titleized version of the title if necesary
-function collectChildren(db, id, depth) {
-  if (depth < 1)
-    return []
 
-  let children = db.getChildren(id)
-
-  let entries = children.reduce( (entries, childId) => {
-    let child = db.getEntry(childId)
-    child = child.title ? child : child.set('title', TitleTools.titleize(child.id))
-    return entries.concat([child], collectChildren(db, childId, depth-1))
-  }, [])
-
-  return entries
-}
 
 // Which props do we want to inject, given the global state?
 // Note: use https://github.com/faassen/reselect for better performance.
+// If we could include the currently displayed entry in this (ie. location.pathname) 
+// then we could restrict the db to only the relevant part of the database - a performance win
+// if other parts of the database are changing.
 function select(state) {
-  return { db:state }
+  return { db:state.database, view:state.view }
 }
 
 Main.defaultProps = {

@@ -1,9 +1,13 @@
 
 import Index from './Index'
-import Attribute from './Attribute'
 
 import Immutable from 'immutable'
 
+
+//!!! This class should be moved out of the database folder into a parser folder
+// !!! It should not use the Index object or Immutable, but rather just parse to a plain JS object
+
+// !!! consider making attibutes hold a single value by default - square brackets could denote an array
 
 var reTitle = /^\s*#\s+(.*)($|\n)/
 var reAttrBlock = /(((^|\n)---\n)|^)((\n|[ \t]*[-+*][ \t]*([^\s:]+)[ \t]*:[ \t]*(.*))*)$/

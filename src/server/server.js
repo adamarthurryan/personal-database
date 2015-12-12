@@ -14,11 +14,13 @@ import startDatabaseWatcher from './startDatabaseWatcher'
 import Renderer from './Renderer'
 import DatabaseCache from './io/DatabaseCache'
 
+import View from '../common/view/View'
+
 import { createStore, combineReducers, applyMiddleware } from 'redux'
 
 
 
-import databaseReducer from '../common/redux/databaseReducer'
+import reducer from '../common/redux/reducer'
 
 var SocketIo = require('socket.io')
 
@@ -62,17 +64,17 @@ const socketEventMiddleware = store => next => action => {
   let initialState = store.getState()
   let result = next(action)
 
-  if (! store.getState().equals(initialState)) {
+  if (! store.getState().database.equals(initialState.database)) {
     io.emit('databaseAction', action)
   }
 
   return result
 }
 
-const notifyCacheMiddleware = store => next => action => {
+const notifyCacheMiddleware = store => next => action => { 
   let result = next(action)
 
-  databaseCache.notifyUpdate(store.getState())
+  databaseCache.notifyUpdate(store.getState().database)
 
   return result
 }
@@ -86,7 +88,7 @@ const loggerMiddleware = store => next => action => {
 }
 
 
-var store=createServerStore(databasePath, databaseReducer, socketEventMiddleware, notifyCacheMiddleware 
+var store=createServerStore(databasePath, reducer, socketEventMiddleware, notifyCacheMiddleware 
   /*loggerMiddleware*/ 
   );
 
@@ -98,7 +100,9 @@ function createServerStore(databasePath, reducer, ...middlewares) {
 
   //load the cached database from the cache
   let cachedDb = databaseCache.readCache()  
-  let store = createStoreWithMiddleware(reducer, cachedDb)
+
+  let state = {database:cachedDb, view:new View()}
+  let store = createStoreWithMiddleware(reducer, state)
 
 
 
